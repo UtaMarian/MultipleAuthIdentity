@@ -1,35 +1,27 @@
-﻿@model IEnumerable<MultipleAuthIdentity.Models.Users>
-
-@{
-    ViewData["Title"] = "Index";
-}
-
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+﻿
+<form >
+<table class="table  table-striped">
+    <thead class="thead-dark">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th></th>
+            <td scope="col">Email</td>
+            <td scope="col">PhoneNumber</td>
+            <td scope="col">TwoFactorEnabled</td>
+            <td scope="col">Edit</td>
+            <td scope="col">Delete</td>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+        @foreach (var user in @Model)
+        {
         <tr>
-            <td>
-                    @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
+            <td>@user.Email</td>
+                <td>@user.PhoneNumber</td>
+                <td>@user.TwoFactorEnabled</td>
+                
+                <td><button class="btn btn-warning" type="submit" asp-action="Edit" formmethod="get" asp-controller="Admin" asp-route-id="@user.Id">Edit</button></td>
+                    <td><button class="btn btn-danger" type="submit" asp-action="Delete" formmethod="get" asp-controller="Admin" asp-route-id="@user.Id" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button></td>
         </tr>
-}
+        }
     </tbody>
 </table>
+</form>

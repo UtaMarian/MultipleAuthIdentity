@@ -18,6 +18,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using MultipleAuthIdentity.Areas.Identity.Data;
+using Google.Apis.Drive.v3.Data;
+using MultipleAuthIdentity.Data;
+using MultipleAuthIdentity.Controllers;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -30,13 +33,15 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<AppUser> _emailStore;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
+        private readonly AuthDbContext _authDbContext;
 
         public ExternalLoginModel(
             SignInManager<AppUser> signInManager,
             UserManager<AppUser> userManager,
             IUserStore<AppUser> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            AuthDbContext authDbContext)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -44,6 +49,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _logger = logger;
             _emailSender = emailSender;
+            _authDbContext = authDbContext;
         }
 
         /// <summary>
@@ -117,6 +123,14 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+                AppUser user = _authDbContext.Users.Find(info.Principal.Identity.Name);
+                if(user != null)
+                {
+                    user.LastSignIn = DateTime.Now;
+                    _authDbContext.SaveChanges();
+                }
+                
+                AdminController.growupOnlineUsers();
                 return LocalRedirect(returnUrl);
             }
             if (result.IsLockedOut)
@@ -160,6 +174,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "USER");
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {

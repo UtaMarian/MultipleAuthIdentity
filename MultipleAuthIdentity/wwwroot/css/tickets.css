@@ -1,0 +1,31 @@
+﻿
+.ticket-form {
+    border-radius: 10px 10px 10px 10px;
+    background: #fff;
+    padding: 30px;
+    width: 90%;
+    position: relative;
+    padding: 0px;
+    box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
+    text-align: center;
+    margin: 0 auto;
+}
+.inline_div{
+    display:flex;
+
+}
+.inline_element {
+    flex: 1;
+    margin-right: 40px;
+    width: 200px;
+    margin-bottom: 25px;
+    margin-top: 25px;
+}
+
+.in-block {
+    flex: 1;
+    margin-right: 10px;
+    width: 200px;
+    margin-bottom: 25px;
+    margin-top: 25px;
+}

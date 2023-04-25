@@ -17,18 +17,27 @@ using Microsoft.Extensions.Logging;
 using MultipleAuthIdentity.Areas.Identity.Data;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MultipleAuthIdentity.Controllers;
+using MultipleAuthIdentity.Data;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
+  
     public class LoginModel : PageModel
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly AuthDbContext _authDbContext;
         
-        public LoginModel(SignInManager<AppUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<AppUser> signInManager, ILogger<LoginModel> logger, AuthDbContext authDbContext)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _authDbContext = authDbContext;
         }
 
         /// <summary>
@@ -137,6 +146,10 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
                     //await _signInManager.SignInWithClaimsAsync(user,Input.RememberMe, claims);
                     _logger.LogInformation("User logged in.");
+                    AdminController.growupOnlineUsers();
+                    user.LastSignIn=DateTime.Now;
+                    _authDbContext.SaveChanges();
+
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -158,5 +171,6 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             // If we got this far, something failed, redisplay form
             return Page();
         }
+
     }
 }

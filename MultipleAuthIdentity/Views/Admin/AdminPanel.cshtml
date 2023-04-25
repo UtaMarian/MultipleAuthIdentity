@@ -1,0 +1,123 @@
+﻿@model AdminPanelModel
+
+<link rel="stylesheet" href="~/css/adminpanel.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<body>
+    <div class="main-container">
+        <div class="app-stats">
+            <img src="/images/teamwork.png" alt="App Icon" class="icon">
+            <h3 class="title">Utilizatori online</h3>
+            <div class="stats">
+                <span class="number">@Model.onlineUsers</span>
+                <span class="label">Utilizatori</span>
+            </div>
+        </div>
+        <div class="app-stats">
+            <img src="/images/man.png" alt="App Icon" class="icon">
+            <h3 class="title">Utilizatori</h3>
+            <div class="stats">
+                <span class="number">@Model.totalUsers</span>
+                <span class="label">Utilizatori</span>
+            </div>
+        </div>
+        <div class="app-stats">
+            <img src="/images/ticket.png" alt="App Icon" class="icon">
+            <h3 class="title">Bilete vandute</h3>
+            <div class="stats">
+                <span class="number">@Model.soldedTickets</span>
+                <span class="label">Bilete</span>
+            </div>
+        </div>
+        <div class="app-stats">
+            <img src="/images/money.png" alt="App Icon" class="icon">
+            <h3 class="title">Total venituri</h3>
+            <div class="stats">
+                <span class="number">@Model.totalMoney</span>
+                <span class="label">Lei</span>
+            </div>
+        </div>
+    </div>
+    <div class="charts-div">
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+    <div class="pie-container">
+        <canvas id="myPie"></canvas>
+    </div>
+    </div>
+</body>
+<script>
+    var monthlyOnlineUsers = @Html.Raw(Json.Serialize(Model.montlyOnlineUsers));
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"],
+            datasets: [{
+                label: 'Utilizatori',
+                data: monthlyOnlineUsers,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    ticks: {
+                        color: 'white'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    ticks: {
+                        beginAtZero: true,
+                        color: 'white'
+
+                    }
+                }
+            }
+        }
+    });
+
+    var ctxPie = document.getElementById('myPie').getContext('2d');
+    var data = {
+        labels: ['Buc-Cluj', 'Cra-Iasi', 'Buc-Tim', 'Tim-Cluj', 'Cluj-Iasi', 'Buc-Cra', 'Buc-Iasi'],
+        datasets: [{
+            label: 'Venituri',
+            data: [12, 19, 3, 5, 2, 3, 33],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(153, 102, 255, 0.5)',
+                'rgba(255, 159, 64, 0.5)',
+                'rgba(255, 119, 32, 0.5)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 119, 32, 1'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    // Create the chart
+    var myPie = new Chart(ctxPie, {
+        type: 'pie',
+        data: data,
+
+    });
+</script>

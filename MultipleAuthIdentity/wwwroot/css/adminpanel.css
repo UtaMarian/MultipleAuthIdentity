@@ -1,0 +1,103 @@
+﻿
+body {
+    background-color: #201c2c;
+}
+
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.container {
+    margin: 0px !important;
+    padding: 0px !important;
+}
+
+.app-stats {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    color: #fff;
+    margin: 10px;
+    margin-left: 10%;
+    flex: 1;
+}
+
+.icon {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: #fff;
+    margin-right: 50px;
+}
+
+
+.stats {
+    margin-left: auto;
+    text-align: right;
+    color: #fff;
+}
+
+.number {
+    font-size: 48px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #fff;
+}
+
+.label {
+    font-size: 18px;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.chart-container {
+    width: 50%;
+    height: 400px;
+    color: white;
+    display: flex;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 20px 0 0 0;
+    margin-left: 50px;
+    flex: 1;
+}
+
+.pie-container {
+    width: 50%;
+    height: 400px;
+    margin: 20px 0 0 0;
+    color: white;
+    display: flex;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    display: inline-block;
+    margin-left: 50px;
+    flex: 1;
+}
+
+.charts-div {
+    margin-left: 10% !important;
+    display: flex;
+    width: 100% !important;
+    float: right;
+    flex-wrap: wrap;
+    margin-bottom:50px;
+}
+
+@media (max-width: 768px) {
+    .app-stats {
+        flex-basis: calc(50% - 20px);
+    }
+}
+
+

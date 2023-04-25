@@ -1,0 +1,59 @@
+﻿@model List<TicketModel>
+
+@foreach(var r in Model){
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-sm-8 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Ticket Information</h4>
+                    <hr />
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>From:</strong> @r.From</p>
+                        </div>
+                        <div class="col-6">
+                                <p><strong>To:</strong> @r.To</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                                <p><strong>Date:</strong> @r.Date</p>
+                        </div>
+                        <div class="col-6">
+                                <p><strong>Time:</strong> @r.Time</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                                <p><strong>Seat Number:</strong> @r.SeatNumber</p>
+                        </div>
+                        <div class="col-6">
+                                <p><strong>Price:</strong> @r.Price</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>

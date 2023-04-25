@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Google.Apis.Auth.AspNetCore3;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("AuthDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AuthDbContextConnection' not found.");
@@ -18,6 +23,10 @@ var connectionString = builder.Configuration.GetConnectionString("AuthDbContextC
 //builder.Services.AddSingleton(emailConfig);
 
 //builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
@@ -32,30 +41,43 @@ builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireCo
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication()
     .AddCookie(options =>
     {
+
         options.LoginPath = "/login";
-        options.AccessDeniedPath = "/denied";
+        options.AccessDeniedPath = "/login";
         options.ExpireTimeSpan = TimeSpan.FromHours(1);
         options.Cookie.HttpOnly = true;  // to prevent cookies from being accessed by client-side scripts
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //to prevent cookies from being sent over unsecured connections
         options.Cookie.SameSite = SameSiteMode.Strict; // flag to prevent cross-site request forgery (CSRF) attacks
     })
-    
-    //.AddJwtBearer(options =>
+
+    //.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,options =>
     //{
+
     //    options.TokenValidationParameters = new TokenValidationParameters
     //    {
-    //        ValidateIssuer = true,
-    //        ValidateAudience = true,
-    //        ValidateLifetime = true,
-    //        ValidateIssuerSigningKey = true,
-    //        ValidIssuer = "YourIssuer",
-    //        ValidAudience = "YourAudience",
-    //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKey"))
+
+    //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secretKeyTopRosiaBarcelona"))
+    //    };
+    //    options.Events = new JwtBearerEvents
+    //    {
+    //        OnTokenValidated = context =>
+    //        {
+    //            var identity = context.Principal.Identity as ClaimsIdentity;
+    //            if (identity != null)
+    //            {
+    //                var userName = identity.FindFirst(ClaimTypes.Name)?.Value;
+    //                if (!string.IsNullOrEmpty(userName))
+    //                {
+    //                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userName));
+    //                }
+    //            }
+    //            return Task.CompletedTask;
+    //        }
     //    };
     //})
     .AddGoogle("Google", options =>
@@ -68,7 +90,10 @@ builder.Services.AddAuthentication()
         options.Scope.Add("profile");
         options.Scope.Add("email");
         options.AuthorizationEndpoint += "?prompt=consent";
+        options.SaveTokens = true;
+
     })
+  
 .AddFacebook("Facebook", options =>
  {
      options.AppId = builder.Configuration["Facebook:AppId"];
@@ -82,6 +107,15 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireUserName("marianuta112@gmail.com");
     });
+    options.AddPolicy("Authenticated", policy =>
+    {
+        policy.AuthenticationSchemes.Add(CookieAuthenticationDefaults.AuthenticationScheme);
+        policy.RequireAuthenticatedUser();
+    });
+    //options.AddPolicy("JwtRequired", policy =>
+    //{
+       
+    //});
 });
 
 var app = builder.Build();

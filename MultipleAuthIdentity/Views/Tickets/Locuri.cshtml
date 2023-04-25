@@ -1,0 +1,158 @@
+﻿@model dynamic
+@{
+    TempData["selected_seat"] ="";
+    var nr = 0;
+    var routeId = 0;
+    
+    if(Model!=null){
+        TempData["num_seats"] = Model.TravelRoutes.Capacity as string;
+        nr = (int)Model.TravelRoutes.Capacity;
+        routeId = (int)Model.TravelRoutes.Id;
+    }
+    
+}
+
+<link rel="stylesheet" href="~/css/locuri.css">
+<link rel="stylesheet" href="~/css/tickets.css">
+<h2>Selectati locul dorit:</h2><br />
+<div id="message"></div>
+<div class="bus-seats">
+    @for(var i=0;i<@nr;i++)
+    {
+        var isReserved = false;
+        var reservedSeatNumber = "";
+        foreach(var reservation in Model.Reservations)
+        {
+            if(reservation.SeatNumber == i)
+            {
+                isReserved = true;
+                //reservedSeatNumber = i;
+                break;
+            }
+        }
+        if (isReserved)
+        {
+            <button class="seat red" onclick="">@i</button>
+        }
+        else
+        {
+            <button id="@i" class="seat green" onclick="handleSeatClick(this.id,this)">@i</button>
+        }
+
+    }
+</div>
+
+<h2>Selectati tipul biletului:</h2>
+
+
+<ul class="list-group" id="list-group">
+</ul>
+<input type="button" class="btn btn-primary" value="Confirma comanda" onclick="handleSubmit()"/>
+
+<script>
+    const seats_num=[];
+ 
+    function handleSeatClick(buttonId, buttonElement) {
+        
+          if (seats_num.includes(buttonId)) {
+            buttonElement.style.backgroundColor="green";
+
+            const index = seats_num.indexOf(buttonId);
+            if (index !== -1) {
+              seats_num.splice(index, 1);
+            }
+          } else {
+            buttonElement.style.backgroundColor = "#FFA500";
+
+            seats_num.push(buttonId);
+          }
+
+          console.log("Selected seats: " + seats_num);
+
+        const parent = document.getElementById('list-group');
+        parent.innerHTML="";
+        for (const seatId of seats_num) {
+           
+            const li = document.createElement('li');
+            li.classList.add('list-group-item');
+            li.id = seatId;
+
+            const row = document.createElement('div');
+            row.classList.add('row');
+
+            const labelCol = document.createElement('div');
+            labelCol.classList.add('col-md-4');
+           
+            const label = document.createElement('label');
+            label.textContent = "Locul " + seatId;
+          
+            labelCol.appendChild(label);
+           
+            const dropdownCol = document.createElement('div');
+            dropdownCol.classList.add('col-md-8');
+           
+            const dropdown = document.createElement('select');
+            dropdown.classList.add('form-select');
+            dropdown.id="seatType"+seatId;
+
+            const options = [
+                { value: "adult", label: "Adult" },
+                { value: "pensionar", label: "Pensionar" },
+                { value: "student", label: "Student" },
+                { value: "copil", label: "Copil" },
+            ];
+            for (const option of options) {
+                const optionElement = document.createElement('option');
+                optionElement.setAttribute('value', option.value);
+                optionElement.textContent = option.label
+                dropdown.appendChild(optionElement);
+            }
+            dropdownCol.appendChild(dropdown);
+            
+            row.appendChild(labelCol);
+            row.appendChild(dropdownCol);
+            
+            li.appendChild(row);
+            
+            parent.appendChild(li);
+            
+        }
+    }
+
+    function handleSubmit() {
+        var types=[];
+        if (seats_num.length==0){
+            alert("Inca nu a-ti selectat niciun loc");
+            
+        }else{
+            for(const seat of seats_num ){
+                var t = document.getElementById("seatType" + seat).value;
+                console.log(t);
+                types.push(t);
+            }
+            const val = sessionStorage.getItem("departure_day");
+            
+            const id = @routeId;
+            var data = { routeId: id, Date: val, SeatsNumber: seats_num, TicketsType: types };
+
+            fetch('/Tickets/ConfirmareRezervare', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                //.then(response => response.json())
+                .then(data => {
+                    const msg=document.createElement("h4");
+                    const container = document.getElementById("message");
+                    msg.innerHTML="Biletele au fost achizitionate";
+                    msg.style.backgroundColor="lightgreen";
+                    msg.style.font="bold";
+
+                    container.appendChild(msg);
+                })
+                .catch(error => console.error(error));
+        }
+    }
+</script>

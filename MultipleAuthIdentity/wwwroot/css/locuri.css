@@ -1,0 +1,54 @@
+﻿.bus-seats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.seat {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    border-radius: 50%;
+    background-color: lightgray;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+    .seat.selected {
+        background-color: #007bff;
+    }
+
+button.green {
+    background-color: forestgreen;
+}
+button.red {
+    background-color: red;
+}
+button.yellow {
+    background-color: yellow;
+}
+
+.container{
+    display: flex !important;
+    justify-content: center !important; /* aligns elements in the center horizontally */
+    align-items: center !important;
+}
+
+
+.element{
+    margin:10px;
+}
+
+.list-group-item {
+    display: flex;
+    align-items: center;
+}
+
+    .list-group-item label {
+        margin-right: 10px;
+    }
+.btn-primary{
+    margin-top:10px;
+}

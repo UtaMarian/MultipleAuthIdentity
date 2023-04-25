@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using MultipleAuthIdentity.Areas.Identity.Data;
+using MultipleAuthIdentity.Controllers;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -28,6 +29,8 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
+
+            AdminController.growDownOnlineUsers();
             if (returnUrl != null)
             {
                 return LocalRedirect(returnUrl);

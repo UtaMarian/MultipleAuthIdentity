@@ -1,0 +1,47 @@
+﻿
+@{
+}
+<link rel="stylesheet" href="~/css/tickets.css">
+<h1>Bilete Online</h1>
+
+<div>
+    <form class="ticket-form" asp-controller="Tickets" asp-action="Cautare_Curse" method="post" id="form_">
+        
+        <div class="inline_div">
+            <label class="in-block">Plecare din</label>
+            <select class="form-select inline_element" name="departure">
+                <option selected>Timisoara</option>
+                <option value="Bucuresti">Bucuresti</option>
+                <option value="Craiova">Craiova</option>
+                <option value="Cluj">Cluj</option>
+            </select>
+            <label class="in-block">Sosire la</label>
+            <select class="form-select inline_element" name="arrival">
+                <option selected>Timisoara</option>
+                <option value="Bucuresti">Bucuresti</option>
+                <option value="Craiova">Craiova</option>
+                <option value="Cluj">Cluj</option>
+            </select>
+        </div>
+
+        <label>Data plecarii:</label>
+        
+        <input id="departure_day" type="date" class="inline_element" name="date" />
+        <button type="submit" class="btn btn-primary" onclick="SaveDate()" id="submit_btn">Cautare</button>
+    </form>
+</div>
+
+<script>
+    function SaveDate(){
+        const date = document.getElementById("departure_day").value;
+        const dateFormat = new Date(date);
+        if (!isNaN(dateFormat.getTime())) {
+            sessionStorage.setItem("departure_day", date);
+        }else{
+            alert("Selectati data in care doriti sa calatoriti");
+
+        }
+        
+     
+    }
+</script>
