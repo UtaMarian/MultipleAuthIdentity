@@ -41,9 +41,19 @@
                 <p>
                     @foreach (var provider in Model.ExternalLogins)
                     {
-                        <button type="submit" class="btn btn-primary  btn btn-block btn-social btn-@provider.DisplayName.ToLower()" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                            <span class="fa fa-@provider.DisplayName.ToLower()"></span> @provider.DisplayName
-                        </button>        
+                            @if (provider.DisplayName == "SAML2P")
+                            {
+                                <button type="submit" class="btn btn-primary btn btn-block btn-social btn-github" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                    <span class="fa fa-github"></span> Okta
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-primary  btn btn-block btn-social btn-@provider.DisplayName.ToLower()" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                    <span class="fa fa-@provider.DisplayName.ToLower()"></span> @provider.DisplayName
+                                </button>
+                            }
+                                 
                     }
                 </p>
             </div>

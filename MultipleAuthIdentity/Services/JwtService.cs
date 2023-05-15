@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using MultipleAuthIdentity.Areas.Identity.Data;
 using MultipleAuthIdentity.DTO;
@@ -50,6 +51,9 @@ namespace MultipleAuthIdentity.Services
             LoginJwtResponse res = new LoginJwtResponse(user.Id, user.Email, user.UserName, jwt);
             return res;
         }
+
+  
+
         public bool VerifyToken()
         {
             var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();

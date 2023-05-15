@@ -21,6 +21,8 @@ using MultipleAuthIdentity.Areas.Identity.Data;
 using Google.Apis.Drive.v3.Data;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.Controllers;
+using MultipleAuthIdentity.Models;
+using System.Linq;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -131,6 +133,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 }
                 
                 AdminController.growupOnlineUsers();
+               
                 return LocalRedirect(returnUrl);
             }
             if (result.IsLockedOut)
@@ -149,7 +152,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                         Email = info.Principal.FindFirstValue(ClaimTypes.Email)
                     };
                 }
-                return Page();
+                return await OnPostConfirmationAsync(returnUrl);
             }
         }
 
@@ -158,6 +161,9 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             returnUrl = returnUrl ?? Url.Content("~/");
             // Get the information about the user from the external login provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
+            Console.WriteLine(info.AuthenticationTokens);
+            Console.WriteLine(info.AuthenticationProperties);
+            Console.WriteLine(info.Principal);
             if (info == null)
             {
                 ErrorMessage = "Error loading external login information during confirmation.";
@@ -167,10 +173,18 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
-
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-
+                var email = "";
+                if (info.LoginProvider.Equals("saml2"))
+                {
+                    email=info.Principal.Claims.FirstOrDefault().Value;
+                }
+                else
+                {
+                    email = Input.Email;
+                }
+                await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+                user.EmailConfirmed = true;
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -183,23 +197,30 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                        Console.WriteLine(code);
+                        Console.WriteLine(userId);
+                        Console.WriteLine(Request.Scheme);
+
                         var callbackUrl = Url.Page(
                             "/Account/ConfirmEmail",
                             pageHandler: null,
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                        await _emailSender.SendEmailAsync(email, "Confirm your email",
                             $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
+                        user.EmailConfirmed = true;
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
-                        }
+                        //if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                        //{
+                        //    return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
+                        //}
+                       
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
                         return LocalRedirect(returnUrl);
+                        
                     }
                 }
                 foreach (var error in result.Errors)

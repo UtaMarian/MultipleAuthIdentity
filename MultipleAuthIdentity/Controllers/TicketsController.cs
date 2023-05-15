@@ -60,6 +60,22 @@ namespace MultipleAuthIdentity.Controllers
             return travel;
         }
 
+        [HttpPost("reservations")]
+        public List<int> getLocuriPerCursa(SeatsDto dto)
+        {
+            DateTime dateTime = DateTime.Parse(dto.DepartureDay);
+
+           
+            var rs = from m in _context.Reservations where m.RouteId.ToString() == dto.Id & m.DateSchedule.Day == dateTime.Day select m;
+            List<int> locuriIndisponibile=new List<int>();
+
+            foreach(var r in rs)
+            {
+                locuriIndisponibile.Add(r.SeatNumber);
+            }
+            return locuriIndisponibile;
+
+        }
         [HttpPost("mytickets")]
         public List<Reservation> GetReservations(TicketsDto req)
         {
@@ -164,6 +180,8 @@ namespace MultipleAuthIdentity.Controllers
             return View(mymodel);
         }
 
+      
+
         [HttpPost]
         public async Task<IActionResult> ConfirmareRezervare([FromBody] ReservationModel data)
         {
@@ -198,8 +216,12 @@ namespace MultipleAuthIdentity.Controllers
         public class TicketsDto
         {
             public string Id { get; set; } = string.Empty;
-       
+        }
 
+        public class SeatsDto
+        {
+            public string Id { get; set; } = string.Empty;
+            public string DepartureDay { get; set;}= string.Empty;
         }
 
     }

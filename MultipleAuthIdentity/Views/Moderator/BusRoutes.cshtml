@@ -1,0 +1,134 @@
+﻿@model BusRoutes
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Display Routes and Buses</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-OgVRvuATP1z7JjHLkuOUzKw6I+LOeWZfXTjhPuXvIcVTxIHV12pbwTEQw7I79JuC"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+
+    <style>
+
+        .list-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .list-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .list-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .list-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display:flex;
+        }
+
+        .list-item-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .list-item-details {
+            margin-top: 5px;
+        }
+
+        .list-item-details p {
+            margin: 0;
+            font-size: 14px;
+        }
+    .item_info{
+            float: left;
+            width: 90%;
+    }
+    .item_btn{
+            float: right;
+            width: 8%;
+    }
+
+        .btn{
+            margin-top:10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="list-container">
+                    <div class="list-header">
+                        <h3>Curse</h3>
+                    </div>
+                    <div class="list-title">Curse</div>
+                    <div class="list-items">
+                        @foreach(var r in Model.routes)
+                        {
+                        <div class="list-item">
+                            <div class="item_info">
+                                <div class="list-item-title">@r.BusId</div>
+                                <div class="list-item-details">
+
+                                    <p>Plecare din : @r.Departure</p>
+                                    <p>Sosire la: @r.Arrival</p>
+                                    <p>Data plecarii: @r.DepartureDate</p>
+                                    <p>Data sosirii: @r.ArrivalDate</p>
+                                    <p>Pret: @r.Price</p>
+                                   
+                                </div>
+                            </div>
+                                <div class="item_btn">
+                                    <button class="btn btn-danger" asp-controller="TicketsController" asp-action="deleteRoute" asp-route-id="@r.Id"><i class="bi bi-trash"></i></button>
+                                    <button class="btn btn-primary" asp-controller="TicketsController" asp-action="editRoute" asp-route-id="@r.Id"><i class="bi bi-pencil"></i></button>
+                                </div>
+                        </div>
+                            
+                            
+                       }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="list-container">
+                    <div class="list-header">
+                        <h3>Autobuze</h3>
+                    </div>
+                    <div class="list-title">Autobuze</div>
+                    <div class="list-items">
+                        @foreach(var b in Model.buses)
+                        {
+                        <div class="list-item">
+                            <div class="item_info">
+                                <div class="list-item-title">@b.Bus_number</div>
+                                <div class="list-item-details">
+                                    <p>Numar de inmatriculare: @b.Bus_Plate_number</p>
+                                    <p>Tip autobuz: @b.Bus_Type</p>
+                                    <p>Locuri: @b.Capacity</p>
+                                </div>
+                            </div>
+                            <div class="item_btn">
+                                    <button class="btn btn-danger"><i class="bi bi-trash"></i></button>
+                                    <button class="btn btn-primary"><i class="bi bi-pencil"></i></button>
+                            </div>
+                        </div> 
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

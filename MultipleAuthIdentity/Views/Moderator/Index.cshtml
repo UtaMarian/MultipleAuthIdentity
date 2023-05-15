@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Adauga ruta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOUzKw6I+LOeWZfXTjhPuXvIcVTxIHV12pbwTEQw7I79JuC"
+        crossorigin="anonymous">
+  <style>
+    .form-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .form-header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .form-label {
+      font-weight: bold;
+    }
+    .form-submit {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-container">
+          <div class="form-header">
+            <h3>Adauga ruta</h3>
+          </div>
+          <form>
+            <div class="form-group">
+              <label for="bus-id" class="form-label">ID autobuz:</label>
+              <input type="text" class="form-control" id="bus-id" name="busId" required>
+            </div>
+            <div class="form-group">
+              <label for="departure" class="form-label">Plecare din:</label>
+              <input type="text" class="form-control" id="departure" name="departure" required>
+            </div>
+            <div class="form-group">
+              <label for="arrival" class="form-label">Sosire la:</label>
+              <input type="text" class="form-control" id="arrival" name="arrival" required>
+            </div>
+            <div class="form-group">
+              <label for="departure-date" class="form-label">Data plecarii:</label>
+              <input type="date" class="form-control" id="departure-date" name="departureDate" required>
+            </div>
+            <div class="form-group">
+              <label for="arrival-date" class="form-label">Data sosirii:</label>
+              <input type="date" class="form-control" id="arrival-date" name="arrivalDate" required>
+            </div>
+            <div class="form-group">
+              <label for="price" class="form-label">Pret:</label>
+              <input type="number" class="form-control" id="price" name="price" required>
+            </div>
+            <div class="form-submit">
+              <button type="submit" class="btn btn-primary">Adauga ruta</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-container">
+          <div class="form-header">
+            <h3>Adauga autobuz</h3>
+          </div>
+          <form>
+            <div class="form-group">
+              <label for="bus-number" class="form-label">Numar autobuz:</label>
+              <input type="text" class="form-control" id="bus-number" name="busNumber" required>
+            </div>
+                        <div class="form-group">
+                            <label for="plate-number" class="form-label">Numar de inmatriculare:</label>
+                            <input type="text" class="form-control" id="plate-number" name="plateNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bus-type" class="form-label">Tipul autobuzului:</label>
+                            <input type="text" class="form-control" id="bus-type" name="busType" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="capacity" class="form-label">Locuri:</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" required>
+                        </div>
+                        <div class="form-submit">
+                            <button type="submit" class="btn btn-primary">Adauga autobuz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+

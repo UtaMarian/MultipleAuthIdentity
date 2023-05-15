@@ -1,0 +1,12 @@
+﻿@model MyError
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3 text-center">
+            <h1 class="display-4 mb-4">Oops! Ceva nu a mers bine.</h1>
+            <p class="lead">Ne pare rău dar a apărut o eroare. Vă rugam să încercați mai târziu.</p><br />
+            <h2 class="alert-danger text-danger">@Model.Message</h2>
+            <p class="alert-dark lead text-black">@Model.Description</p>
+        </div>
+    </div>
+</div>

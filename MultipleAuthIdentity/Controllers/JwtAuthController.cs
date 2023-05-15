@@ -1,13 +1,17 @@
-﻿using Google.Apis.Drive.v3.Data;
+﻿using Google.Apis.Auth;
+using Google.Apis.Drive.v3.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MultipleAuthIdentity.Areas.Identity.Data;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.DTO;
 using MultipleAuthIdentity.Services;
+using NuGet.Common;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -33,7 +37,7 @@ namespace MultipleAuthIdentity.Controllers
         [HttpPost("loginJWT")]
         public async Task<ActionResult<LoginJwtResponse>> Login(UserDto request)
         {
-            Console.WriteLine(request.Email + " " + request.Password);
+            
 
             AppUser? user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
@@ -49,17 +53,45 @@ namespace MultipleAuthIdentity.Controllers
 
             LoginJwtResponse response = _jwtService.CreateToken(user);
 
-            //var refreshToken = GenerateRefreshToken(user);
-            //SetRefreshToken(refreshToken, user);
-
             return response;
 
         }
 
+
+        [HttpPost("registerJWT")]
+        public async Task<ActionResult<LoginJwtResponse>> Register(UserDto request)
+        {
+            AppUser? user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                user = new AppUser();
+                user.UserName = request.Email;
+                user.Email = request.Email;
+                await _userManager.AddPasswordAsync(user,request.Password);
+                user.NormalizedEmail = request.Email.ToUpper();
+                user.NormalizedUserName = request.Email.ToUpper();
+                user.TwoFactorEnabled = false;
+                user.PhoneNumberConfirmed = false;
+                user.EmailConfirmed = false;
+
+                await _userManager.CreateAsync(user);
+                user = await _userManager.FindByEmailAsync(request.Email);
+                await _userManager.AddToRoleAsync(user, "USER");
+                LoginJwtResponse response = _jwtService.CreateToken(user);
+                
+                return response;
+            }
+            else
+            {
+                return NotFound("User already exist");
+            }
+        }
+        
+        //[Authorize]
         [HttpGet("info")]
         public ResponseDto testJwtAuth()
         {
-            ResponseDto res=new ResponseDto();
+            ResponseDto res = new ResponseDto();
             if (_jwtService.VerifyToken())
             {
                 res.Message = "Merge";
@@ -69,6 +101,65 @@ namespace MultipleAuthIdentity.Controllers
             return res;
         }
 
+        [HttpPost("loginGoogle")]
+        public async Task<ActionResult<LoginJwtResponse?>> loginWithIdToken(string id)
+        {
+
+            // The CLIENT_ID is the audience parameter, which identifies the client that is requesting the token.
+            // You can obtain the CLIENT_ID from the Google Cloud Console.
+            const string CLIENT_ID = "967836242772-d3sb3adjjephnmr9bpfchfnd5k8qs5ir.apps.googleusercontent.com";
+
+            // The tokenString parameter is the ID token that you want to verify.
+            GoogleJsonWebSignature.Payload payload = null;
+            try
+            {
+                GoogleJsonWebSignature.ValidationSettings settings = new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { CLIENT_ID }
+                };
+                payload = await GoogleJsonWebSignature.ValidateAsync(id, settings);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+             
+            }
+
+            if (payload != null)
+            {
+
+                string userId = payload.Subject;
+                string email = payload.Email;
+
+                AppUser? user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    //user = new AppUser();
+                    //user.UserName = request.Email;
+                    //user.Email = request.Email;
+                    //user.NormalizedEmail = request.Email.ToUpper();
+                    //user.NormalizedUserName = request.Email.ToUpper();
+                    //user.TwoFactorEnabled = false;
+                    //user.PhoneNumberConfirmed = false;
+                    //user.EmailConfirmed = false;
+
+                    //await _userManager.CreateAsync(user);
+                    //user = await _userManager.FindByEmailAsync(request.Email);
+                    //await _userManager.AddToRoleAsync(user, "USER");
+                    //LoginJwtResponse response = _jwtService.CreateToken(user);
+                }
+                else
+                {
+                    LoginJwtResponse response = _jwtService.CreateToken(user);
+                }
+                
+
+            }
+            return Unauthorized("User not found");
+           
+        }
+    
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MultipleAuthIdentity</title>
+    <title>@ViewData["Title"] JustGo</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MultipleAuthIdentity.styles.css" asp-append-version="true" />
@@ -18,7 +18,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark  border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/airplane.png" class="logo" />MultipleAuth</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/airplane.png" class="logo" />JustGO</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -31,13 +31,23 @@
                         @if (User.IsInRole("ADMIN"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Admin" asp-action="Index">Users</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Admin" asp-action="Index">Utilizatori</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Google">SuperAdmin</a>
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Google">Super Admin</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-white" asp-area="" asp-controller="Admin" asp-action="AdminPanel">Admin Panel</a>
+                            </li>
+
+                        }
+                        else if(User.IsInRole("MODERATOR"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Moderator" asp-action="Index">Adauga cursa</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Moderator" asp-action="BusRoutes">Cursele mele</a>
                             </li>
                         }
                         else
@@ -69,10 +79,10 @@
         </main>
     </div>
 
-    <footer class=" footer text-muted">
-        <div class="container">
+    <footer class="footer text-muted">
+       @* <div class="container">
             &copy; 2023 - MultipleAuthIdentity - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
+        </div>*@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

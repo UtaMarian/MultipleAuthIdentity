@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MultipleAuthIdentity.Controllers;
 using MultipleAuthIdentity.Data;
+using MultipleAuthIdentity.Models;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -116,7 +117,19 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+            if (!Url.IsLocalUrl(returnUrl)&& !returnUrl.IsNullOrEmpty())
+            {
+                MyError error=new MyError();
+                error.Message = "Eroare de redirectare";
+                error.Code = 400;
+                error.Description = "Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului";
+                return RedirectToAction("ErrorPage", "Home", error);
+                //returnUrl = Url.Content("~/");
+            }
+
+
             returnUrl ??= Url.Content("~/");
+ 
             
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
@@ -149,8 +162,10 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                     AdminController.growupOnlineUsers();
                     user.LastSignIn=DateTime.Now;
                     _authDbContext.SaveChanges();
-
-                    return LocalRedirect(returnUrl);
+                   
+                        var redirect = LocalRedirect(returnUrl);
+                        return redirect;
+                   
                 }
                 if (result.RequiresTwoFactor)
                 {

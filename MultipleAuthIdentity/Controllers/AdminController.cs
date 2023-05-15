@@ -93,6 +93,23 @@ namespace MultipleAuthIdentity.Controllers
             
             List<float> prices=_context.Reservations.Select(r => r.Price).ToList();
             List<AppUser> totalUsers = _context.Users.ToList();
+            List<int> providers = new List<int>();
+            var prov=_context.UserLogins.ToList();
+            int google = 0;
+            int facebook = 0;
+            int cookie = 0;
+            foreach(var p in prov)
+            {
+                if (p.ProviderDisplayName == "Google")
+                    google++;
+                else if(p.ProviderDisplayName=="Facebook")
+                        facebook++;
+            }
+            cookie = totalUsers.Count() - google - facebook;
+
+            providers.Add(google);
+            providers.Add(facebook);
+            providers.Add(cookie);
 
             if (DateTime.Now.Day == 1)
             {
@@ -104,6 +121,9 @@ namespace MultipleAuthIdentity.Controllers
             model.totalUsers = totalUsers.Count();
             model.onlineUsers = onlineUsers;
             model.totalMoney = prices.Sum();
+            model.providers = providers;
+
+
             return View(model);
         }
         public int getOnlineUsers()

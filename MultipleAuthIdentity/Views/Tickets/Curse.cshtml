@@ -1,7 +1,47 @@
 ﻿
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+<style>
+    .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        max-width: 600px;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    }
 
+    .exit-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 50px 250px 50px 200px;
+        grid-gap: 10px;
+    }
+
+    .col-icon {
+        text-align: right;
+        width:50px;
+    }
+
+    .col-title {
+        text-align: center;
+    }
+
+</style>
 @if (@Model.Count!=0)
 {
+    int i = 0;
     <form>
     <h1>Curse disponibile</h1>
     <h4>Plecare din <i>@Model[0].Departure</i></h4>
@@ -12,6 +52,7 @@
                 <th scope="col">#</th>
             <th scope="col">Plecare</th>
                 <th scope="col">Sosire</th>
+                <th scope="col">Info</th>
                 <th scope="col">Locuri</th>
                 <th scope="col">Pret</th>
                 <th scope="col"></th>
@@ -20,10 +61,12 @@
         <tbody>
             @foreach (var route in @Model)
             {
+                    
                     <tr>
                         <th scope="row"><img width="30" src="/images/icons8-bus-64 (1).png"/></th>
                         <td>@route.DepartureDate</td>
                         <td>@route.ArrivalDate</td>
+                        <td><i class="bi bi-info-circle" onclick="showInfo(@i)"></i></td>
                         <td>@route.Capacity</td>
                         <td>@route.Price lei</td>
                         <td>
@@ -33,6 +76,7 @@
                             </form>
                         </td>
                     </tr>
+                    i++;
             }
         </tbody>
     </table>
@@ -49,4 +93,61 @@ else
     }
     var departureDay = sessionStorage.getItem("departure_day");
     document.getElementById("departure_day").value = departureDay;
+
+    const popup = document.createElement('div');
+    popup.innerHTML = `
+<div class="popup" id=popup>
+    <div class="exit-btn" id="exit-btn">&#x2716;</div>
+        <div class="grid-container">
+            <div class="col-icon"><i class="bi bi-cursor-fill"></i></div>
+            <div class="col-title" id="plecare"><p>Plecare</p></div>
+            <div class="col-icon"><i class="bi bi-cloud-haze"></i></div>
+            <div class="col-title"><p>Aer conditionat</p></div>
+            <div class="col-icon"><i class="bi bi-geo-alt"></i></div>
+            <div class="col-title" id="sosire"><p>Sosire</p></div>
+            <div class="col-icon"><i class="bi bi-wifi"></i></div>
+            <div class="col-title"><p>WiFi gratis</p></div>
+            <div class="col-icon"><i class="bi bi-cash-coin"></i></div>
+            <div class="col-title" id="pret"><p>Pret</p></div>
+            <div class="col-icon"><i class="bi bi-clock"></i></div>
+            <div class="col-title" id="durata"><p>Durata</p></div>
+            <div class="col-icon"><i class="bi bi-cart-plus"></i></div>
+            <div class="col-title" id="locuri"><p>Locuri:</p></div>
+        </div>
+    </div>
+</div>
+      `;
+    function showInfo(index){
+        var model = @Html.Raw(Json.Serialize(Model));
+        document.body.appendChild(popup);
+        
+        const plecare=document.getElementById('plecare');
+        const sosire=document.getElementById('sosire');
+        const durata=document.getElementById('durata');
+        const pret=document.getElementById('pret');
+        const locuri=document.getElementById('locuri');
+
+  
+        const date1 = new Date(model[index].departureDate);
+        const date2 = new Date(model[index].arrivalDate);
+
+        const diffMs = Math.abs(date2 - date1);
+
+        const diffMinutes = Math.floor(diffMs / 1000 / 60);
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffMinutesRemainder = diffMinutes % 60;
+        const diffStr = `${diffHours.toString().padStart(2, '0')}:${diffMinutesRemainder.toString().padStart(2, '0')}`;
+
+
+        plecare.innerHTML ="Plecare : "+model[index].departure;
+        sosire.innerHTML = "Sosire : " + model[index].arrival;
+        durata.innerHTML = "Durata : " + diffStr;
+        pret.innerHTML = "Pret : " + model[index].price;
+        locuri.innerHTML = "Locuri : " + model[index].capacity;
+
+        const exitButton = document.getElementById('exit-btn');
+        exitButton.addEventListener('click', function () {
+            document.body.removeChild(popup);
+        });
+    }
 </script>

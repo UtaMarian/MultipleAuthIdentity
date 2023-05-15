@@ -38,8 +38,8 @@ namespace MultipleAuthIdentity.Controllers
             return View();
         }
 
-       
 
+        [Authorize]
         public IActionResult Privacy()
         {
             
@@ -89,6 +89,13 @@ namespace MultipleAuthIdentity.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-      
+        [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult ErrorPage(MyError error)
+        {
+            return View(error);
+        }
+
+
     }
 }
