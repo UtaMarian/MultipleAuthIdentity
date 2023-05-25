@@ -27,7 +27,7 @@
         <label>Data plecarii:</label>
         
         <input id="departure_day" type="date" class="inline_element" name="date" />
-        <button type="submit" class="btn btn-primary" onclick="SaveDate()" id="submit_btn">Cautare</button>
+        <button type="button" class="btn btn-primary" onclick="SaveDate()" id="submit_btn">Cautare</button>
     </form>
 </div>
 
@@ -37,6 +37,7 @@
         const dateFormat = new Date(date);
         if (!isNaN(dateFormat.getTime())) {
             sessionStorage.setItem("departure_day", date);
+            document.getElementById("form_").submit();
         }else{
             alert("Selectati data in care doriti sa calatoriti");
 

@@ -155,7 +155,7 @@ namespace MultipleAuthIdentity.Controllers
             return View(tickets);
         }
 
-       
+        
         public IActionResult Locuri(string id,string departure_day)
         {
             DateTime dateTime = DateTime.Parse(departure_day);

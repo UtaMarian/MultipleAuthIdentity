@@ -38,6 +38,17 @@ namespace MultipleAuthIdentity.Controllers
             return View();
         }
 
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ContactPost( ContactDto dto)
+        {
+            Console.WriteLine(dto.Name);
+            return View();
+        }
 
         [Authorize]
         public IActionResult Privacy()
@@ -96,6 +107,12 @@ namespace MultipleAuthIdentity.Controllers
             return View(error);
         }
 
+        public class ContactDto
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Email { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
 
+        }
     }
 }

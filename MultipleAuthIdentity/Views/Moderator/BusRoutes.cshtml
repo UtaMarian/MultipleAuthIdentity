@@ -12,7 +12,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
 
     <style>
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
 
+        .exit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-gap: 10px;
+            align-items: center;
+            justify-items: center;
+            text-align: center;
+        }
+
+        .alert-success {
+            color: green;
+        }
         .list-container {
             max-width: 800px;
             margin: 0 auto;
@@ -64,6 +96,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="row">
@@ -76,7 +109,8 @@
                     <div class="list-items">
                         @foreach(var r in Model.routes)
                         {
-                        <div class="list-item">
+                          
+                            <div class="list-item">
                             <div class="item_info">
                                 <div class="list-item-title">@r.BusId</div>
                                 <div class="list-item-details">
@@ -90,8 +124,10 @@
                                 </div>
                             </div>
                                 <div class="item_btn">
-                                    <button class="btn btn-danger" asp-controller="TicketsController" asp-action="deleteRoute" asp-route-id="@r.Id"><i class="bi bi-trash"></i></button>
-                                    <button class="btn btn-primary" asp-controller="TicketsController" asp-action="editRoute" asp-route-id="@r.Id"><i class="bi bi-pencil"></i></button>
+
+                                    <button  class="btn btn-danger"><i class="bi bi-trash"></i></button>
+                                    <button class="btn btn-primary" ><i class="bi bi-pencil"></i></button>
+                                    
                                 </div>
                         </div>
                             
@@ -119,7 +155,7 @@
                                 </div>
                             </div>
                             <div class="item_btn">
-                                    <button class="btn btn-danger"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-danger" onclick="confirmDelete()" asp-controller="Moderator"  asp-action="deleteRoute"><i class="bi bi-trash"></i></button>
                                     <button class="btn btn-primary"><i class="bi bi-pencil"></i></button>
                             </div>
                         </div> 
@@ -130,5 +166,32 @@
         </div>
 
     </div>
+ 
 </body>
+
 </html>
+<script>
+    const popup = document.createElement('div');
+    popup.innerHTML = `
+        <div class="popup" id=popup>
+            <div class="exit-btn" id="exit-btn">&#x2716;</div>
+                <div class="grid-container">
+                        <div><h1class="alert-success">Ruta a fost stearsa cu succes</h1></div>
+                </div>
+            </div>
+        </div>
+              `;
+    function confirmDelete() {
+        console.log("deleted");
+        var result = confirm("Are you sure you want to delete this route?");
+        if (result) {
+
+            
+            document.body.appendChild(popup);
+            const exitButton = document.getElementById('exit-btn');
+            exitButton.addEventListener('click', function () {
+                document.body.removeChild(popup);
+            });
+        }
+    }
+</script>

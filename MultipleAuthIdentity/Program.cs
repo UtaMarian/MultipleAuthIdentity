@@ -55,32 +55,6 @@ builder.Services.AddAuthentication()
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //to prevent cookies from being sent over unsecured connections
         options.Cookie.SameSite = SameSiteMode.Strict; // flag to prevent cross-site request forgery (CSRF) attacks
     })
-
-    //.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,options =>
-    //{
-
-    //    options.TokenValidationParameters = new TokenValidationParameters
-    //    {
-
-    //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secretKeyTopRosiaBarcelona"))
-    //    };
-    //    options.Events = new JwtBearerEvents
-    //    {
-    //        OnTokenValidated = context =>
-    //        {
-    //            var identity = context.Principal.Identity as ClaimsIdentity;
-    //            if (identity != null)
-    //            {
-    //                var userName = identity.FindFirst(ClaimTypes.Name)?.Value;
-    //                if (!string.IsNullOrEmpty(userName))
-    //                {
-    //                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userName));
-    //                }
-    //            }
-    //            return Task.CompletedTask;
-    //        }
-    //    };
-    //})
     .AddGoogle("Google", options =>
     {
         options.ClientId = builder.Configuration["Google:ClientId"];

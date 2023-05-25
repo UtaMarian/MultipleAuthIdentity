@@ -3,8 +3,13 @@
 
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
 <ul class="navbar-nav">
+ 
+    <li class="nav-item">
+        <a href="#" id="manage" class="nav-link text-white">Help</a>
+    </li>
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
@@ -18,6 +23,7 @@
 }
 else
 {
+
     <li class="nav-item">
             <a class="nav-link text-white" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
     </li>

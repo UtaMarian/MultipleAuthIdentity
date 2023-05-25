@@ -133,7 +133,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-
+          
             if (ModelState.IsValid)
             {
                 
