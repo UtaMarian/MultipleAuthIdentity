@@ -67,16 +67,15 @@ namespace MultipleAuthIdentity.Services
                 _configuration.GetSection("AppSettings:Token").Value));
 
             var validationParameters = new TokenValidationParameters { 
-
-                ValidateIssuerSigningKey = true, // Verify that the signing key is valid and trusted
+                ValidateIssuerSigningKey = true, 
                 IssuerSigningKey = key,
-                ValidateIssuer = true, // Verify the token's issuer
-                ValidIssuer = "Licenta2022Backend", // Set the issuer that the token should come from
-                ValidateAudience = true, // Verify the audience of the token
-                ValidAudience = "marian", // Set the audience that the token should be intended for
-                RequireExpirationTime = true, // Ensure the token has an expiration time
-                ValidateLifetime = true, // Verify that the token is not expired
-                ClockSkew = TimeSpan.Zero // Set the clock skew to zero to ensure the token is not expired
+                ValidateIssuer = true,
+                ValidIssuer = "Licenta2022Backend", 
+                ValidateAudience = true, 
+                ValidAudience = "marian",
+                RequireExpirationTime = true, 
+                ValidateLifetime = true, 
+                ClockSkew = TimeSpan.Zero
             };
 
             try

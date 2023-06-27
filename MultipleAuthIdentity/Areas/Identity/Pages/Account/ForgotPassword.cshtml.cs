@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using MultipleAuthIdentity.Areas.Identity.Data;
+using Serilog;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -52,17 +53,24 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.Console()
+                        .WriteTo.File("log.txt")
+                        .CreateLogger();
+
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(Input.Email);
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
+                    Log.CloseAndFlush();
                     return RedirectToPage("./ForgotPasswordConfirmation");
                 }
 
-                // For more information on how to enable account confirmation and password reset please
-                // visit https://go.microsoft.com/fwlink/?LinkID=532713
+                Log.Warning("Utilizatorul doreste sa-si reseteze parola : " + user.Email);
+
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page(
@@ -74,11 +82,11 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 await _emailSender.SendEmailAsync(
                     Input.Email,
                     "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
+                    $"Dati click pe link ca sa va schimbati parola '{HtmlEncoder.Default.Encode(callbackUrl)}");
+                Log.CloseAndFlush();
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
-
+            Log.CloseAndFlush();
             return Page();
         }
     }

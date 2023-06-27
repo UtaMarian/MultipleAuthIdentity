@@ -79,8 +79,8 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 Input.Email,
-                "Confirm your email",
-                $"Please confirm your account by {callbackUrl}");
+                "Confirmati emailul",
+                $"Confirmati emailul aici {callbackUrl}");
 
             ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
             return Page();

@@ -1,6 +1,4 @@
-﻿
-@{
-}
+﻿@model Cities
 <link rel="stylesheet" href="~/css/tickets.css">
 <h1>Bilete Online</h1>
 
@@ -10,17 +8,19 @@
         <div class="inline_div">
             <label class="in-block">Plecare din</label>
             <select class="form-select inline_element" name="departure">
-                <option selected>Timisoara</option>
-                <option value="Bucuresti">Bucuresti</option>
-                <option value="Craiova">Craiova</option>
-                <option value="Cluj">Cluj</option>
+                @foreach (var c in Model.Departures)
+                {
+                    <option value="@c">@c</option>
+                }
+                
             </select>
             <label class="in-block">Sosire la</label>
             <select class="form-select inline_element" name="arrival">
-                <option selected>Timisoara</option>
-                <option value="Bucuresti">Bucuresti</option>
-                <option value="Craiova">Craiova</option>
-                <option value="Cluj">Cluj</option>
+                @foreach(var c in Model.Arrivals)
+                {
+                    <option value="@c">@c</option>
+                }
+               
             </select>
         </div>
 

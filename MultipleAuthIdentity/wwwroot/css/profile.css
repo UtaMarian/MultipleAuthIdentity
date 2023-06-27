@@ -1,0 +1,21 @@
+﻿.nav-pills .nav-link {
+    width: 250px;
+    
+}
+
+.item-row {
+    display: flex;
+    height:24px;
+}
+.item-first {
+    flex: 1;
+    padding:0px;
+}
+.item-second {
+    flex: 5;
+}
+.box {
+    padding: 2rem;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}

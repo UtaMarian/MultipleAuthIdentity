@@ -49,21 +49,19 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
             var result = await _userManager.ChangeEmailAsync(user, email, code);
             if (!result.Succeeded)
             {
-                StatusMessage = "Error changing email.";
+                StatusMessage = "Eroare la schimbarea emailului.";
                 return Page();
             }
 
-            // In our UI email and user name are one and the same, so when we update the email
-            // we need to update the user name.
             var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
             if (!setUserNameResult.Succeeded)
             {
-                StatusMessage = "Error changing user name.";
+                StatusMessage = "Eroare la schimbarea usernameului.";
                 return Page();
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Thank you for confirming your email change.";
+            StatusMessage = "Vă mulțumim că va-ți confirmat emailul.";
             return Page();
         }
     }

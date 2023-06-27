@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="~/css/adminpanel.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
 <body>
     <div class="main-container">
         <div class="app-stats">
@@ -39,17 +40,30 @@
         </div>
     </div>
     <div class="charts-div">
-    <div class="chart-container">
-        <canvas id="myChart"></canvas>
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="pie-container">
+            <canvas id="myPie"></canvas>
+        </div>
     </div>
-    <div class="pie-container">
-        <canvas id="myPie"></canvas>
+    <div class="chart-dailyusers">
+        <canvas id="daily-users"></canvas>
     </div>
-    </div>
+    
+   
+   
 </body>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
 <script>
     var monthlyOnlineUsers = @Html.Raw(Json.Serialize(Model.montlyOnlineUsers));
+    var dailyOnlineUsers = @Html.Raw(Json.Serialize(Model.dailyUsers));
     var ctx = document.getElementById('myChart').getContext('2d');
+    var dailyusersCtx = document.getElementById('daily-users').getContext('2d');
+
+    //utilizatori lunari in aplicatie
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -86,29 +100,75 @@
         }
     });
 
+    //utilizatori zilnici in aplicatie
+    var daysList = [];
+    var now = new Date();
+    var daysInMonth=new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    for (var i = 1; i <= daysInMonth; i++) {
+        daysList.push(i);
+    }
+
+    var dailyChart = new Chart(dailyusersCtx, {
+        type: 'line',
+        data: {
+            labels: daysList,
+            datasets: [{
+                label: 'Utilizatori',
+                data: dailyOnlineUsers,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    ticks: {
+                        color: 'white'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    ticks: {
+                        beginAtZero: true,
+                        color: 'white'
+
+                    }
+                }
+            }
+        }
+    });
+
     var providers = @Html.Raw(Json.Serialize(Model.providers));
     console.log(providers);
     var ctxPie = document.getElementById('myPie').getContext('2d');
     var data = {
-        labels: ['Google', 'Facebook', 'Cookie'],
+        labels: ['Google', 'Facebook', 'Cookie','Okta'],
         datasets: [{
             label: 'Provider',
             data: providers,
             backgroundColor: [
                 'rgba(255, 99, 132, 0.5)',
                 'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 206, 86, 0.5)'
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(173,255,47, 0.5)'
             ],
             borderColor: [
                 'rgba(255, 99, 132, 1)',
                 'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)'
+                'rgba(255, 206, 86, 1)',
+                'rgba(173,255,47,1)'
             ],
             borderWidth: 1
         }]
     };
 
-    // Create the chart
+  
     var myPie = new Chart(ctxPie, {
         type: 'pie',
         data: data,

@@ -24,12 +24,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MultipleAuthIdentity.Controllers;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.Models;
+using Serilog;
+using Google.Apis.Drive.v3.Data;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
   
     public class LoginModel : PageModel
     {
+
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly AuthDbContext _authDbContext;
@@ -99,6 +103,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
+            
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
@@ -117,22 +122,30 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+
+            //Logguri autentificare
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.Console()
+                        .WriteTo.File("log.txt")
+                        .CreateLogger();
             if (!Url.IsLocalUrl(returnUrl)&& !returnUrl.IsNullOrEmpty())
             {
+                Log.Error("Redirect URL invalid. User Email=" + Input.Email);
                 MyError error=new MyError();
                 error.Message = "Eroare de redirectare";
                 error.Code = 400;
                 error.Description = "Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului";
-                return RedirectToAction("ErrorPage", "Home", error);
-                //returnUrl = Url.Content("~/");
-            }
 
+                Log.Warning("Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului - User: " + Input.Email);
+                Log.CloseAndFlush();
+                return RedirectToAction("ErrorPage", "Home", error);
+            }
+            
 
             returnUrl ??= Url.Content("~/");
  
-            
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
           
             if (ModelState.IsValid)
             {
@@ -141,49 +154,50 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 if (user == null)
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    Log.Error("Utilizatorul nu exista : " + Input.Email);
                     return Page();
                 }
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 
                 if (result.Succeeded)
                 {
-                    
-                    //var claims = new Claim[] 
-                    //{
-                    //    new Claim("da","pwd")
-                    //};
-                    ////obtin rolurile din baza de date asignate userului
-                    //var roles = await _signInManager.UserManager.GetRolesAsync(user);
-
-                    //await _signInManager.SignInWithClaimsAsync(user,Input.RememberMe, claims);
                     _logger.LogInformation("User logged in.");
+                    
                     AdminController.growupOnlineUsers();
                     user.LastSignIn=DateTime.Now;
+                    var ip=HttpContext.Connection.RemoteIpAddress.ToString();
+                    user.IpAddress = ip;
+                    _authDbContext.Update(user);
                     _authDbContext.SaveChanges();
-                   
-                        var redirect = LocalRedirect(returnUrl);
-                        return redirect;
+
+                    Log.Information("Autentificare reușită pentru utilizatorul "+ user.Email);
+                    var redirect = LocalRedirect(returnUrl);
+                    Log.CloseAndFlush();
+                    return redirect;
                    
                 }
                 if (result.RequiresTwoFactor)
                 {
+                    Log.Information("Autentificare parțial reușită. Utilizatorul este redirectat catre autentificarea cu doi pasi. " + user.Email);
+                    Log.CloseAndFlush();
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
                 }
                 if (result.IsLockedOut)
                 {
+                    Log.Warning("Autentificare nereușită pentru utilizatorul "+ user.Email+" . Acesta a atins numarul maxim de incercari." );
                     _logger.LogWarning("User account locked out.");
+                    Log.CloseAndFlush();
                     return RedirectToPage("./Lockout");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    Log.Warning("Încercare de conectare nevalidă pentru utilizatorul: " + Input.Email+ " . Contul este blocat temporar pentru depasirea numarului de incercari.");
+                    Log.CloseAndFlush();
+                    ModelState.AddModelError(string.Empty, "Invalid login.");
                     return Page();
                 }
             }
-
-            // If we got this far, something failed, redisplay form
+            Log.CloseAndFlush();
             return Page();
         }
 

@@ -23,6 +23,7 @@ using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.Controllers;
 using MultipleAuthIdentity.Models;
 using System.Linq;
+using Serilog;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -107,42 +108,66 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.Console()
+                        .WriteTo.File("log.txt")
+                        .CreateLogger();
+
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
             {
+                Log.Error("Eroare de la provideul de identitate " + remoteError);
+                Log.CloseAndFlush();
                 ErrorMessage = $"Error from external provider: {remoteError}";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
+                Log.Error("Eroare incarcare informatii de login" );
+                Log.CloseAndFlush();
                 ErrorMessage = "Error loading external login information.";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
-            // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
-                AppUser user = _authDbContext.Users.Find(info.Principal.Identity.Name);
-                if(user != null)
+                var email = "";
+                if (info.LoginProvider.Equals("saml2"))
                 {
+                    email = info.Principal.Claims.FirstOrDefault().Value;
+                }
+                else
+                {
+                    email =  info.Principal.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault().Value;
+                }
+
+                Log.Information(email + " s-a autentificat cu contul de "+ info.LoginProvider);
+                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+
+                AppUser user = await _userManager.FindByEmailAsync(email);
+                if (user != null)
+                {
+                    var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+                    user.IpAddress = ip;
                     user.LastSignIn = DateTime.Now;
+                    _authDbContext.Users.Update(user);
                     _authDbContext.SaveChanges();
                 }
-                
+
                 AdminController.growupOnlineUsers();
-               
+                Log.CloseAndFlush();
                 return LocalRedirect(returnUrl);
             }
             if (result.IsLockedOut)
             {
+                Log.CloseAndFlush();
                 return RedirectToPage("./Lockout");
             }
             else
             {
-                // If the user does not have an account, then ask the user to create an account.
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
@@ -152,20 +177,26 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                         Email = info.Principal.FindFirstValue(ClaimTypes.Email)
                     };
                 }
+                Log.CloseAndFlush();
                 return await OnPostConfirmationAsync(returnUrl);
             }
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.Console()
+                        .WriteTo.File("log.txt")
+                        .CreateLogger();
+
             returnUrl = returnUrl ?? Url.Content("~/");
-            // Get the information about the user from the external login provider
+
             var info = await _signInManager.GetExternalLoginInfoAsync();
-            Console.WriteLine(info.AuthenticationTokens);
-            Console.WriteLine(info.AuthenticationProperties);
-            Console.WriteLine(info.Principal);
             if (info == null)
             {
+                Log.Error("Eroare incarcare informatii de la providerul: "+info.LoginProvider);
+                Log.CloseAndFlush();
                 ErrorMessage = "Error loading external login information during confirmation.";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
@@ -185,6 +216,10 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
                 user.EmailConfirmed = true;
+                user.LastSignIn = DateTime.Now;
+                var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+                user.IpAddress = ip;
+
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -193,6 +228,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                     if (result.Succeeded)
                     {
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+                        Log.Information("Utilizatorul "+ info.Principal.Identity.Name+" a creat un cont cu contul de "+ info.LoginProvider);
 
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -207,18 +243,14 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        await _emailSender.SendEmailAsync(email, "Confirmati emailul",
+                            $"Confirmati contul aici: {HtmlEncoder.Default.Encode(callbackUrl)}");
 
                         user.EmailConfirmed = true;
-                        // If account confirmation is required, we need to show the link if we don't have a real email sender
-                        //if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        //{
-                        //    return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
-                        //}
-                       
+
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                        Log.CloseAndFlush();
                         return LocalRedirect(returnUrl);
                         
                     }
@@ -231,6 +263,7 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
             ProviderDisplayName = info.ProviderDisplayName;
             ReturnUrl = returnUrl;
+            Log.CloseAndFlush();
             return Page();
         }
 

@@ -10,5 +10,6 @@ namespace MultipleAuthIdentity.Areas.Identity.Data;
 public class AppUser : IdentityUser
 {
     public DateTime? LastSignIn { get; set; }
+    public string? IpAddress { get; set; }
 }
 

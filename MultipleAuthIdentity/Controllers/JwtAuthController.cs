@@ -10,11 +10,20 @@ using MultipleAuthIdentity.Areas.Identity.Data;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.DTO;
 using MultipleAuthIdentity.Services;
-using NuGet.Common;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Auth.OAuth2.Web;
+using Google.Apis.Util.Store;
+using System;
+using System.Threading;
+using Duende.IdentityServer.Models;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MultipleAuthIdentity.Controllers
 {
@@ -26,12 +35,20 @@ namespace MultipleAuthIdentity.Controllers
         private readonly IConfiguration _configuration;
         private readonly IJwtService _jwtService;
 
-        public JwtAuthController(AuthDbContext context, UserManager<AppUser> userManager, IConfiguration configuration, IJwtService jwtService)
+        private const string GoogleTokenEndpoint = "https://oauth2.googleapis.com/token";
+        private readonly string clientId= "";
+        private readonly string clientSecret= "";
+        private readonly string redirectUri= "";
+
+        public JwtAuthController(AuthDbContext context, UserManager<AppUser> userManager, IConfiguration configuration, IJwtService jwtService, SignInManager<AppUser> signInManager)
         {
             _dbcontext = context;
             _userManager = userManager;
             _configuration = configuration;
             _jwtService = jwtService;
+            clientId = _configuration.GetSection("GoogleMobile:ClientId").Value;
+            clientSecret = _configuration.GetSection("GoogleMobile:ClientSecret").Value;
+            redirectUri = _configuration.GetSection("GoogleMobile:RedirectUri").Value;
         }
 
         [HttpPost("loginJWT")]
@@ -44,12 +61,18 @@ namespace MultipleAuthIdentity.Controllers
             {
                 return NotFound("User not found");
             }
-
+         
 
             if (!await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 return BadRequest("Wrong password");
             }
+
+            var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+            user.IpAddress = ip;
+            user.LastSignIn = DateTime.Now;
+            _dbcontext.Users.Update(user);
+            _dbcontext.SaveChanges();
 
             LoginJwtResponse response = _jwtService.CreateToken(user);
 
@@ -86,8 +109,117 @@ namespace MultipleAuthIdentity.Controllers
                 return NotFound("User already exist");
             }
         }
+
+        [HttpPost("HandleCode")]
+        public async Task<ActionResult<LoginJwtResponse>> ExchangeCodeForTokens([FromHeader] string Authorization)
+        {
+            string googleCode = Authorization.Replace("Bearer ", string.Empty);
+             
+            using (HttpClient client = new HttpClient())
+            {
+                var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "code", googleCode },
+                { "client_id",  clientId},
+                { "client_secret",  clientSecret},
+                { "redirect_uri", redirectUri },
+                { "grant_type", "authorization_code" }
+            });
+
+                var response = await client.PostAsync(GoogleTokenEndpoint, content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Failed to exchange code for tokens: {responseContent}");
+                }
+
+
+                var tokenResponse = JsonConvert.DeserializeObject<GoogleTokenResponse>(responseContent);
+
+                var handler = new JwtSecurityTokenHandler();
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidAudience = clientId,
+                    ValidIssuer = "https://accounts.google.com",
+                    IssuerSigningKeys = await GetSigningKeysAsync()
+                };
+
+                try
+                {
+                    ClaimsPrincipal claimsPrincipal = handler.ValidateToken(tokenResponse.IdToken, validationParameters, out var validatedToken);
+
+                    string Email = claimsPrincipal.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+
+                    AppUser? user = await _userManager.FindByEmailAsync(Email);
+                    if (user == null)
+                    {
+                        //utilizatorul nu are cont
+                        user = new AppUser();
+                        user.UserName =Email;
+                        user.Email = Email;
+                        user.NormalizedEmail =Email.ToUpper();
+                        user.NormalizedUserName = Email.ToUpper();
+                        user.TwoFactorEnabled = false;
+                        user.PhoneNumberConfirmed = false;
+                        user.EmailConfirmed = false;
+                        user.Id = claimsPrincipal.FindFirstValue("sub");
+                        var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+                        user.IpAddress = ip;
+                        user.LastSignIn = DateTime.Now;
+                        await _userManager.CreateAsync(user);
+                        user = await _userManager.FindByEmailAsync(Email);
+                        await _userManager.AddToRoleAsync(user, "USER");
+                        LoginJwtResponse responseRegiser = _jwtService.CreateToken(user);
+
+                        return responseRegiser;
+
+                    }
+                    else
+                    {
+                        var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+                        user.IpAddress = ip;
+                        user.LastSignIn = DateTime.Now;
+                        _dbcontext.Users.Update(user);
+                        _dbcontext.SaveChanges();
+                    }
+                    LoginJwtResponse responseJwt = _jwtService.CreateToken(user);
+
+                    return responseJwt;
+                }
+                catch (Exception ex)
+                {
+                    return Unauthorized("Token is invalid. " + ex.Message);
+                }
+            }
+
         
-        //[Authorize]
+        }
+        
+      
+        private async Task<IEnumerable<SecurityKey>> GetSigningKeysAsync()
+        {
+            string GoogleSigningKeysEndpoint = "https://www.googleapis.com/oauth2/v3/certs";
+
+            using (HttpClient client = new HttpClient())
+            {
+                var response = await client.GetAsync(GoogleSigningKeysEndpoint);
+                response.EnsureSuccessStatusCode();
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                var signingKeys = new List<SecurityKey>();
+
+                var jwksDocument = new JsonWebKeySet(responseContent);
+
+                foreach (var key in jwksDocument.Keys)
+                {
+                    signingKeys.Add(key);
+                }
+
+                return signingKeys;
+            }
+        }
+
         [HttpGet("info")]
         public ResponseDto testJwtAuth()
         {
@@ -100,144 +232,6 @@ namespace MultipleAuthIdentity.Controllers
             res.Message = "Nu merge";
             return res;
         }
-
-        [HttpPost("loginGoogle")]
-        public async Task<ActionResult<LoginJwtResponse?>> loginWithIdToken(string id)
-        {
-
-            // The CLIENT_ID is the audience parameter, which identifies the client that is requesting the token.
-            // You can obtain the CLIENT_ID from the Google Cloud Console.
-            const string CLIENT_ID = "967836242772-d3sb3adjjephnmr9bpfchfnd5k8qs5ir.apps.googleusercontent.com";
-
-            // The tokenString parameter is the ID token that you want to verify.
-            GoogleJsonWebSignature.Payload payload = null;
-            try
-            {
-                GoogleJsonWebSignature.ValidationSettings settings = new GoogleJsonWebSignature.ValidationSettings
-                {
-                    Audience = new[] { CLIENT_ID }
-                };
-                payload = await GoogleJsonWebSignature.ValidateAsync(id, settings);
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-             
-            }
-
-            if (payload != null)
-            {
-
-                string userId = payload.Subject;
-                string email = payload.Email;
-
-                AppUser? user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
-                {
-                    //user = new AppUser();
-                    //user.UserName = request.Email;
-                    //user.Email = request.Email;
-                    //user.NormalizedEmail = request.Email.ToUpper();
-                    //user.NormalizedUserName = request.Email.ToUpper();
-                    //user.TwoFactorEnabled = false;
-                    //user.PhoneNumberConfirmed = false;
-                    //user.EmailConfirmed = false;
-
-                    //await _userManager.CreateAsync(user);
-                    //user = await _userManager.FindByEmailAsync(request.Email);
-                    //await _userManager.AddToRoleAsync(user, "USER");
-                    //LoginJwtResponse response = _jwtService.CreateToken(user);
-                }
-                else
-                {
-                    LoginJwtResponse response = _jwtService.CreateToken(user);
-                }
-                
-
-            }
-            return Unauthorized("User not found");
-           
-        }
-    
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
-        }
-
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-            }
-        }
-
-        //[HttpPost("refresh-token"), Authorize]
-        //public async Task<ActionResult<string>> RefreshToken([FromHeader] string Authorization)
-        //{
-        //    string jwt = Authorization.Substring("Bearer ".Length).Trim();
-        //    string? email = getEmailFromJWT(jwt);
-        //    Console.WriteLine(email);
-
-
-        //    AppUser? user = await _userManager.FindByEmailAsync(email);
-        //    if (user == null)
-        //    {
-        //        return Unauthorized("User not authenticated.");
-        //    }
-        //    var refreshToken = Request.Cookies["refreshToken"];
-
-        //    if (!user.RefreshToken.Equals(refreshToken))
-        //    {
-        //        return Unauthorized("Invalid Refresh Token.");
-        //    }
-        //    //else if (user.TokenExpires < DateTime.Now)
-        //    //{
-        //    //    return Unauthorized("Token expired.");
-        //    //}
-
-        //    string token = CreateToken(user);
-        //    var newRefreshToken = GenerateRefreshToken(user);
-        //    SetRefreshToken(newRefreshToken, user);
-
-        //    return Ok(token);
-        //}
-
-        //private RefreshToken GenerateRefreshToken(User user)
-        //{
-        //    var refreshToken = new RefreshToken
-        //    {
-        //        Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-        //        Expires = DateTime.Now.AddDays(7),
-        //        Created = DateTime.Now
-        //    };
-
-        //    return refreshToken;
-        //}
-
-        //private void SetRefreshToken(RefreshToken newRefreshToken, User user)
-        //{
-        //    var cookieOptions = new CookieOptions
-        //    {
-        //        HttpOnly = true,
-        //        Expires = newRefreshToken.Expires
-        //    };
-        //    Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
-
-        //    user.RefreshToken = newRefreshToken.Token;
-        //    user.TokenCreated = newRefreshToken.Created;
-        //    user.TokenExpires = newRefreshToken.Expires;
-
-        //    dbReservation.Users.Update(user);
-        //    dbReservation.SaveChanges();
-        //}
 
         private string? getEmailFromJWT(string jwt)
         {
@@ -267,5 +261,20 @@ namespace MultipleAuthIdentity.Controllers
         public string Message { get; set; } = string.Empty;
 
     }
+    public class GoogleTokenResponse
+    {
+        [JsonProperty("access_token")]
+        public string AccessToken { get; set; }
+
+        [JsonProperty("expires_in")]
+        public int ExpiresIn { get; set; }
+
+        [JsonProperty("id_token")]
+        public string IdToken { get; set; }
+
+        [JsonProperty("token_type")]
+        public string TokenType { get; set; }
+    }
+
 }
 

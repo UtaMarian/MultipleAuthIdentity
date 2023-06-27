@@ -20,21 +20,15 @@ namespace MultipleAuthIdentity.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly AuthDbContext dbContext;
 
-
         public HomeController(ILogger<HomeController> logger, AuthDbContext dbContext)
         {
             _logger = logger;
             this.dbContext = dbContext;
         }
 
-        [HttpGet("getinfo")]
-        public string getInfo()
-        {
-            return "Acesta este un test";
-        }
-
         public IActionResult Index()
         {
+
             return View();
         }
 
@@ -44,13 +38,13 @@ namespace MultipleAuthIdentity.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult ContactPost( ContactDto dto)
         {
             Console.WriteLine(dto.Name);
             return View();
         }
 
-        [Authorize]
         public IActionResult Privacy()
         {
             
@@ -62,6 +56,7 @@ namespace MultipleAuthIdentity.Controllers
         }
    
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Privacy(string Subject,string Content)
         {
             Review review= new();
@@ -87,7 +82,7 @@ namespace MultipleAuthIdentity.Controllers
             return View();
         }
 
-
+        [Authorize]
         public IActionResult Google()
         {
 

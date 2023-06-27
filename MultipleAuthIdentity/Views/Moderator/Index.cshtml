@@ -25,7 +25,12 @@
   </style>
 </head>
 <body>
-  <div class="container">
+    @if (TempData["msg"] != null)
+    {
+        <h4 class="bg-success text-white">@TempData["msg"]</h4>
+    }
+    <div class="container">
+
     <div class="row">
       <div class="col-md-6">
         <div class="form-container">
@@ -47,11 +52,11 @@
             </div>
             <div class="form-group">
               <label for="departure-date" class="form-label">Data plecarii:</label>
-              <input type="date" class="form-control" id="departure-date" name="departureDate" required>
+              <input type="datetime-local" class="form-control" id="departure-date" name="departureDate" required>
             </div>
             <div class="form-group">
               <label for="arrival-date" class="form-label">Data sosirii:</label>
-              <input type="date" class="form-control" id="arrival-date" name="arrivalDate" required>
+              <input type="datetime-local" class="form-control" id="arrival-date" name="arrivalDate" required>
             </div>
             <div class="form-group">
               <label for="price" class="form-label">Pret:</label>
@@ -71,27 +76,27 @@
           <div class="form-header">
             <h3>Adauga autobuz</h3>
           </div>
-          <form>
+          <form asp-controller="Moderator" asp-action="AddBus" method="post">
             <div class="form-group">
               <label for="bus-number" class="form-label">Numar autobuz:</label>
-              <input type="text" class="form-control" id="bus-number" name="busNumber" required>
+                <input type="text" class="form-control" id="bus-number" name="Bus_number" required>
             </div>
-                        <div class="form-group">
-                            <label for="plate-number" class="form-label">Numar de inmatriculare:</label>
-                            <input type="text" class="form-control" id="plate-number" name="plateNumber" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bus-type" class="form-label">Tipul autobuzului:</label>
-                            <input type="text" class="form-control" id="bus-type" name="busType" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="capacity" class="form-label">Locuri:</label>
-                            <input type="number" class="form-control" id="capacity" name="capacity" required>
-                        </div>
-                        <div class="form-submit">
-                            <button type="submit" class="btn btn-primary">Adauga autobuz</button>
-                        </div>
-                    </form>
+            <div class="form-group">
+                <label for="plate-number" class="form-label">Numar de inmatriculare:</label>
+                <input type="text" class="form-control" id="plate-number" name="Bus_Plate_number" required>
+            </div>
+            <div class="form-group">
+                <label for="bus-type" class="form-label">Tipul autobuzului:</label>
+                <input type="text" class="form-control" id="bus-type" name="Bus_Type" required>
+            </div>
+            <div class="form-group">
+                <label for="capacity" class="form-label">Locuri:</label>
+                <input type="number" class="form-control" id="capacity" name="Capacity" required>
+            </div>
+            <div class="form-submit">
+                <button type="submit" class="btn btn-primary">Adauga autobuz</button>
+            </div>
+          </form>
                 </div>
             </div>
         </div>

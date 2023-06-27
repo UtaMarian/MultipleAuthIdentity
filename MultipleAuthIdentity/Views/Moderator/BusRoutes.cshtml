@@ -97,10 +97,16 @@
     </style>
 </head>
 
+
 <body>
+    @if (TempData["del"] != null)
+    {
+        <h4 class="bg-info bg-opacity-75" id="delete-msg">@TempData["del"]</h4>
+    }
     <div class="container">
         <div class="row">
             <div class="col-md-6">
+                <form>
                 <div class="list-container">
                     <div class="list-header">
                         <h3>Curse</h3>
@@ -125,8 +131,8 @@
                             </div>
                                 <div class="item_btn">
 
-                                    <button  class="btn btn-danger"><i class="bi bi-trash"></i></button>
-                                    <button class="btn btn-primary" ><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-danger" formmethod="post" type="submit" asp-action="DeleteRoute" asp-controller="Moderator" asp-route-id="@r.Id"><i class="bi bi-trash"></i></button>
+                                    <button class="btn btn-primary" formmethod="get" type="submit" asp-action="EditRoute" asp-controller="Moderator" asp-route-id="@r.Id"><i class="bi bi-pencil"></i></button>
                                     
                                 </div>
                         </div>
@@ -135,8 +141,11 @@
                        }
                     </div>
                 </div>
+                </form>
             </div>
+            
             <div class="col-md-6">
+                <form>
                 <div class="list-container">
                     <div class="list-header">
                         <h3>Autobuze</h3>
@@ -155,13 +164,15 @@
                                 </div>
                             </div>
                             <div class="item_btn">
-                                        <button class="btn btn-danger" onclick="confirmDelete()" asp-controller="Moderator"  asp-action="deleteRoute"><i class="bi bi-trash"></i></button>
-                                    <button class="btn btn-primary"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-danger" onclick="confirmDelete()" formmethod="post" type="submit" asp-route-id="@b.Id" asp-controller="Moderator" asp-action="DeleteBus"><i class="bi bi-trash"></i></button>
+                                <button class="btn btn-primary" formmethod="get" type="submit" asp-route-id="@b.Id" asp-controller="Moderator" asp-action="EditBus"><i class="bi bi-pencil"></i></button>
                             </div>
                         </div> 
                         }
                     </div>
+               
                 </div>
+                </form>
             </div>
         </div>
 
@@ -194,4 +205,8 @@
             });
         }
     }
+   
+    $('#delete-msg').fadeOut(5000, function () {
+        $(this).remove();
+    });
 </script>

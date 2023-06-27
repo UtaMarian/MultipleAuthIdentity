@@ -2,6 +2,7 @@
 using MultipleAuthIdentity.Models;
 using System.Net.Mail;
 using MailKit.Net.Smtp;
+using Serilog;
 
 namespace MultipleAuthIdentity.Services
 {
@@ -41,8 +42,14 @@ namespace MultipleAuthIdentity.Services
                 }
                 catch
                 {
-                    //log an error message or throw an exception or both.
-                    throw;
+
+                Log.Logger = new LoggerConfiguration()
+                       .MinimumLevel.Debug()
+                       .WriteTo.Console()
+                       .WriteTo.File("log.txt")
+                       .CreateLogger();
+                Log.Error("EROARE: Serviciul de email nu mai functioneaza.");
+                throw;
                 }
                 finally
                 {

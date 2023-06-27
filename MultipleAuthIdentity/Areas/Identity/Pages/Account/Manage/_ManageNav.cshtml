@@ -2,14 +2,59 @@
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profil</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Parola</a></li>
+<link rel="stylesheet" href="/css/profile.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+
+<ul class="nav nav-pills flex-column text-black">
+    <li class="nav-item">
+        <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">
+        <div class="item-row">
+            <i class="bi bi-person-fill item-first"></i>
+            <p class="item-second">Profil</p>
+        </div>
+        </a>
+    </li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">
+            <div class="item-row">
+                <i class="bi bi-envelope-fill item-first"></i>
+                <p class="item-second">Email</p>
+            </div>
+        </a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">
+            <div class="item-row">
+                <i class="bi bi-key-fill item-first"></i>
+                <p class="item-second">Parola</p>
+            </div>
+        </a>
+    </li>
     @if (hasExternalLogins)
     {
-        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">Autentificare externa</a></li>
+        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">
+                <div class="item-row">
+                    <i class="bi bi-google item-first"></i>
+                    <p class="item-second">Autentificare externa</p>
+                </div>
+            </a>
+        </li>
     }
-    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Autentificare cu doi pasi</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Date personale</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">
+            <div class="item-row">
+                <i class="bi bi-shield-fill-check item-first"></i>
+                <p class="item-second">Autentificare cu doi pasi</p>
+            </div>
+        </a>
+    </li>
 </ul>
+<script>
+    var firstHeading = document.querySelector("h1");
+    firstHeading.innerHTML="Setarile contului";
+    var secondHeading = document.querySelector("h2");
+    secondHeading.innerHTML = "";
+    var secondHeading = document.querySelector("h2");
+    secondHeading.innerHTML = "";
+
+
+    var section = document.getElementsByClassName("pb-3");
+    section[0].classList.add("box");
+
+</script>

@@ -3,6 +3,7 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Serilog;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -18,6 +19,13 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
         /// </summary>
         public void OnGet()
         {
+            Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Debug()
+                            .WriteTo.Console()
+                            .WriteTo.File("log.txt")
+                            .CreateLogger();
+            Log.Warning("Un utilizator neautorizat doreste sa acceseze o pagina restrictionata : " + HttpContext.User.Identity.Name);
+            Log.CloseAndFlush();
         }
     }
 }

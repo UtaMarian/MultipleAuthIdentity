@@ -23,3 +23,65 @@
     //        }
     //    };
     //})
+
+    
+
+        //[HttpPost("refresh-token"), Authorize]
+        //public async Task<ActionResult<string>> RefreshToken([FromHeader] string Authorization)
+        //{
+        //    string jwt = Authorization.Substring("Bearer ".Length).Trim();
+        //    string? email = getEmailFromJWT(jwt);
+        //    Console.WriteLine(email);
+
+
+        //    AppUser? user = await _userManager.FindByEmailAsync(email);
+        //    if (user == null)
+        //    {
+        //        return Unauthorized("User not authenticated.");
+        //    }
+        //    var refreshToken = Request.Cookies["refreshToken"];
+
+        //    if (!user.RefreshToken.Equals(refreshToken))
+        //    {
+        //        return Unauthorized("Invalid Refresh Token.");
+        //    }
+        //    //else if (user.TokenExpires < DateTime.Now)
+        //    //{
+        //    //    return Unauthorized("Token expired.");
+        //    //}
+
+        //    string token = CreateToken(user);
+        //    var newRefreshToken = GenerateRefreshToken(user);
+        //    SetRefreshToken(newRefreshToken, user);
+
+        //    return Ok(token);
+        //}
+
+        //private RefreshToken GenerateRefreshToken(User user)
+        //{
+        //    var refreshToken = new RefreshToken
+        //    {
+        //        Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+        //        Expires = DateTime.Now.AddDays(7),
+        //        Created = DateTime.Now
+        //    };
+
+        //    return refreshToken;
+        //}
+
+        //private void SetRefreshToken(RefreshToken newRefreshToken, User user)
+        //{
+        //    var cookieOptions = new CookieOptions
+        //    {
+        //        HttpOnly = true,
+        //        Expires = newRefreshToken.Expires
+        //    };
+        //    Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
+
+        //    user.RefreshToken = newRefreshToken.Token;
+        //    user.TokenCreated = newRefreshToken.Created;
+        //    user.TokenExpires = newRefreshToken.Expires;
+
+        //    dbReservation.Users.Update(user);
+        //    dbReservation.SaveChanges();
+        //}

@@ -1,10 +1,5 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model UserEdit
-<h1>Edit</h1>
-
-<h4>Users</h4>
+﻿@model UserEdit
+<h1>Editeaza utilizatorii aplicatiei</h1>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -23,7 +18,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="Role" class="control-label"></label>
-                <input asp-for="Role" class="form-control" />
+                @*<input asp-for="Role" class="form-control" />*@
+                <select class="form-select inline_element" asp-for="Role">
+                    <option value="MODERATOR">Moderator</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="USER">User</option>
+                    </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -32,12 +32,12 @@
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Salveaza" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Inapoi</a>
 </div>

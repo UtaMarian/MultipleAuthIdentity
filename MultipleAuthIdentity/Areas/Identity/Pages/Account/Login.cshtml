@@ -32,9 +32,9 @@
                 </div><br />
                 <div>
                     <div class="checkbox">
-                        <label asp-for="Input.RememberMe" class="form-label" title="Raman logat">
+                        <label asp-for="Input.RememberMe" class="form-label" title="Rămân logat">
                             <input class="form-check-input" asp-for="Input.RememberMe" />
-                            @Html.DisplayNameFor(m => m.Input.RememberMe)
+                            Rămân logat
                         </label>
                     </div>
                 </div>
@@ -43,14 +43,15 @@
                 </div><br />
                 <div>
                     <p>
-                        <a class="help_cmd" id="forgot-password" asp-page="./ForgotPassword">Ați pierdut parola?</a>
-                    </p>
-                    <p>
-                        <a class="help_cmd" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Creați-vă un nou cont</a>
+                        <a class="help_cmd" id="forgot-password" asp-page="./ForgotPassword">V-ati uitat parola ?</a>
                     </p>
                     <p>
                         <a class="help_cmd" id="resend-confirmation" asp-page="./ResendEmailConfirmation">Retrimite confirmare email</a>
                     </p>
+                    <p>
+                        <a class="help_cmd" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Creați-vă un nou cont</a>
+                    </p>
+                    
                 </div>
             </form>
             <hr /><p style="text-align:center;">sau intră în cont cu</p>
@@ -61,13 +62,13 @@
                         {
                             @if (provider.DisplayName == "SAML2P")
                             {
-                                <button type="submit" class="btn btn-primary btn btn-block btn-social btn-github" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                <button type="submit" class="btn btn-primary btn btn-block btn-social btn-github" name="provider" value="@provider.Name" title="Login cu @provider.DisplayName">
                                     <span class="fa fa-github"></span> Okta
                                 </button>
                             }
                             else
                             {
-                                <button type="submit" class="btn btn-primary  btn btn-block btn-social btn-@provider.DisplayName.ToLower()" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                <button type="submit" class="btn btn-primary  btn btn-block btn-social btn-@provider.DisplayName.ToLower()" name="provider" value="@provider.Name" title="Login cu @provider.DisplayName">
                                     <span class="fa fa-@provider.DisplayName.ToLower()"></span> @provider.DisplayName
                                 </button>   
                             }

@@ -27,8 +27,8 @@ namespace MultipleAuthIdentity.Services
 
         public void changeUsersPanel(int month)
         {
-            var onlineUsers = 0;
-
+            var onlineUsers = _userManager.Users.Where(c => c.LastSignIn.Value.Month == month).Count();
+            
             int year = 2023;
 
            //List<AppUser> users = _userManager.Users.Where(u => u.LastSignIn);
@@ -74,22 +74,25 @@ namespace MultipleAuthIdentity.Services
 
         public void saveInFile(int monthIndex,int value)
         {
-            if (!File.Exists("monthlyOnlineUsers.txt"))
+            string filePath = "monthlyOnlineUsers.txt";
+            if (!File.Exists(filePath))
             {
                 List<int> numbers = new List<int> { 1, 1, 1, 1, 0,0,0,0,0,0,0,0 };
                 // Create the file
-                File.Create("monthlyOnlineUsers.txt");
-                using (StreamWriter writer = File.AppendText("monthlyOnlineUsers.txt"))
+          
+                File.Create(filePath).Close();
+                using (StreamWriter writer = File.AppendText(filePath))
                 {
                     foreach (int number in numbers)
                     {
                         writer.WriteLine(number);
                     }
+                    writer.Close(); 
                 }
-
+               
             }
             
-            string[] lines = File.ReadAllLines("monthlyOnlineUsers.txt");
+            string[] lines = File.ReadAllLines(filePath);
 
             if (monthIndex < 0 || monthIndex >= lines.Length)
             {
@@ -98,8 +101,69 @@ namespace MultipleAuthIdentity.Services
 
             lines[monthIndex] = value.ToString();
 
-            File.WriteAllLines("monthlyOnlineUsers.txt", lines);
+            File.WriteAllLines(filePath, lines);
 
         }
+
+        public List<string> GetDailyUserCount()
+        {
+            Dictionary<int,int> ret=new Dictionary<int, int>();
+            List<string> dailyUsers=new List<string>();
+
+            string filePath = "dailyUsers.txt";
+            int currentDay = DateTime.Now.Day;
+
+            if (!File.Exists(filePath))
+            {
+                List<int> numbers = new List<int> { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; ;
+                File.Create(filePath).Close(); ;
+                using (StreamWriter writer = File.AppendText(filePath))
+                {
+                    foreach (int number in numbers)
+                    {
+                        writer.WriteLine(number);
+                    }
+                    writer.Close();
+                }
+
+            }
+
+            string[] lines = File.ReadAllLines(filePath);
+
+
+            var query = from u in _context.Users
+                        where u.LastSignIn.Value.Month == DateTime.Now.Month && u.LastSignIn.Value.Day == currentDay
+                        group u by u.LastSignIn.Value.Day into stats
+                        select new
+                        {
+                            Day = stats.Key,
+                            TotalCount = stats.Count()
+                        };
+
+            foreach (var res in query)
+            {
+                ret.Add(res.Day, res.TotalCount);
+            }
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (i + 1 == currentDay)
+                {
+                    lines[i] = ret.GetValueOrDefault(currentDay).ToString();
+                }
+            }
+            File.WriteAllLines(filePath,lines);
+            dailyUsers = File.ReadAllLines(filePath).ToList();
+
+            
+
+            return dailyUsers;
+        }
+       
+    }
+    public class UserCountPerDay
+    {
+        public int SignInDay{ get; set; }
+        public int UserCount { get; set; }
     }
 }

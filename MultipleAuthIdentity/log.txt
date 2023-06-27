@@ -1,0 +1,19 @@
+2023-06-25 14:51:14.835 +03:00 [INF] Marian s-a autentificat cu contul de Google
+2023-06-25 14:58:55.321 +03:00 [INF] Autentificare reușită pentru utilizatorul danstefan1918@gmail.com
+2023-06-25 15:01:01.318 +03:00 [INF] Autentificare reușită pentru utilizatorul danstefan1918@gmail.com
+2023-06-25 15:29:25.412 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-25 15:31:35.509 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-25 15:35:06.076 +03:00 [ERR] Redirect URL invalid. User Email=danstefan1918@gmail.com
+2023-06-25 15:35:06.077 +03:00 [WRN] Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului - User: danstefan1918@gmail.com
+2023-06-25 15:46:00.969 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-25 16:04:28.947 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-26 15:03:40.609 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-26 15:03:49.100 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-26 17:24:26.343 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-26 17:30:35.307 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-26 22:43:28.082 +03:00 [INF] Autentificare reușită pentru utilizatorul danstefan1918@gmail.com
+2023-06-26 22:45:48.083 +03:00 [INF] Autentificare reușită pentru utilizatorul danstefan1918@gmail.com
+2023-06-27 12:21:36.363 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-27 15:00:16.800 +03:00 [INF] jamesmarian2016@gmail.com s-a autentificat cu contul de saml2
+2023-06-27 15:01:34.550 +03:00 [INF] jamesmarian2016@gmail.com s-a autentificat cu contul de saml2
+2023-06-27 15:02:15.244 +03:00 [INF] jamesmarian2016@gmail.com s-a autentificat cu contul de saml2

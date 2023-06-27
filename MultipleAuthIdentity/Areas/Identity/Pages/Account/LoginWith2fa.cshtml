@@ -1,14 +1,16 @@
 ﻿@page
 @model LoginWith2faModel
 @{
-    ViewData["Title"] = "Two-factor authentication";
+    ViewData["Title"] = "Autentificare cu doi pasi";
 }
 <head>
     <link rel="stylesheet" href="~/css/login.css">
 </head>
 <h1>@ViewData["Title"]</h1>
 <hr />
-<p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
+<p>
+    Autentificarea dvs. este protejată de o aplicație de autentificare. Introduceți codul dvs. de autentificare mai jos.
+</p>
 <div class="row">
     <div class="col-md-4">
         <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
@@ -16,26 +18,26 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-floating">
                 <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="off" />
-                <label asp-for="Input.TwoFactorCode" class="form-label"></label>
+                <label asp-for="Input.TwoFactorCode" class="form-label">Codul de autentificare</label>
                 <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
             </div>
             <div>
                 <div class="checkbox">
-                    <label asp-for="Input.RememberMachine" class="form-label">
+                    <label asp-for="Input.RememberMachine" class="form-label" title="Rămân logat">
                         <input asp-for="Input.RememberMachine" />
                         @Html.DisplayNameFor(m => m.Input.RememberMachine)
                     </label>
                 </div>
             </div>
             <div>
-                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">LOGIN</button>
             </div>
         </form>
     </div>
 </div>
 <p>
-    Don't have access to your authenticator device? You can
-    <a id="recovery-code-login" asp-page="./LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">log in with a recovery code</a>.
+    Nu aveți acces la dispozitivul dvs. de autentificare? Puteți
+    <a id="recovery-code-login" asp-page="./LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">să vă conectați cu un cod de recuperare</a>
 </p>
 
 @section Scripts {

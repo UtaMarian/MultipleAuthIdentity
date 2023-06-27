@@ -8,5 +8,6 @@
         public int soldedTickets { get; set; } = 0;
         public List<string> montlyOnlineUsers { get; set; }= new List<string>(0);
         public List<int> providers { get; set; }= new List<int>();
+        public List<int> dailyUsers { get; set; } = new List<int>();
     }
 }

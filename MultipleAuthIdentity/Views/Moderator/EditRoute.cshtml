@@ -1,0 +1,45 @@
+﻿@model RouteModel
+
+@if(TempData["error"]!=null){
+    <h4 class="bg-danger text-white">@TempData["error"]</h4>
+}
+@if (TempData["msg"] != null)
+{
+    <h4 class="bg-success text-white">@TempData["msg"]</h4>
+}
+<h1>Editează ruta</h1>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="EditRoute">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label class="control-label">Id autobuz</label>
+                <input asp-for="BusId" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label class="control-label">Plecare</label>
+                <input asp-for="Departure" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label  class="control-label">Sosire</label>
+                <input asp-for="Arrival" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label  class="control-label">Data plecare</label>
+                <input asp-for="DepartureDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label  class="control-label">Data sosire</label>
+                <input asp-for="ArrivalDate" type="datetime" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label class="control-label">Pret</label>
+                <input asp-for="Price" class="form-control" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Salvează" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>

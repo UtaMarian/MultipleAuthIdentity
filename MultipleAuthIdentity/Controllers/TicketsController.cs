@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using MultipleAuthIdentity.Areas.Identity.Data;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.Models;
+using MultipleAuthIdentity.Services;
 using NReco.PdfGenerator;
 using Org.BouncyCastle.Ocsp;
 using System.Dynamic;
@@ -19,81 +20,104 @@ namespace MultipleAuthIdentity.Controllers
     
     public class TicketsController : Controller
     {
-
-
         private readonly AuthDbContext _context;
         private readonly UserManager<AppUser> userManager;
-        public TicketsController(AuthDbContext context,UserManager<AppUser> userManager)
+        private readonly IJwtService jwtService;
+
+        public TicketsController(AuthDbContext context,UserManager<AppUser> userManager, IJwtService jwtService)
         {
             _context = context;
             this.userManager = userManager;
+            this.jwtService = jwtService;
         }
+
         public IActionResult Index()
         {
-            return View();
+            Cities cities = new Cities();
+            cities.Departures=_context.Routes.Select(c=>c.Departure).Distinct().ToList();
+            cities.Arrivals=_context.Routes.Select(c => c.Arrival).Distinct().ToList();
+            return View(cities);
         }
-
         
         [HttpPost("curse")]
-        public List<TravelRoutes> getCurse(CurseDto req)
+        public ActionResult<List<TravelRoutes>> getCurse(CurseDto req)
         {
-
-
-            DateTime dateTime;
-            DateTime.TryParse(req.Date, out dateTime);
-
-
-            var curse = _context.Routes.ToList();
-            List<Routes> rute = new();
-            List<TravelRoutes> travel = new();
-            foreach (var c in curse)
+            if (jwtService.VerifyToken())
             {
-                if (req.Arrival.Equals(c.Arrival) && req.Departure.Equals(c.Departure))
+
+                DateTime dateTime;
+                DateTime.TryParse(req.Date, out dateTime);
+
+
+                var curse = _context.Routes.ToList();
+                List<Routes> rute = new();
+                List<TravelRoutes> travel = new();
+                foreach (var c in curse)
                 {
-                    var bus = _context.Bus.Find(c.BusId);
-                    if (bus != null)
+                    if (req.Arrival.Equals(c.Arrival) && req.Departure.Equals(c.Departure))
                     {
-                        travel.Add(new TravelRoutes(c, bus.Bus_Plate_number, bus.Bus_Type, bus.Capacity));
+                        var bus = _context.Bus.Find(c.BusId);
+                        if (bus != null)
+                        {
+                            travel.Add(new TravelRoutes(c, bus.Bus_Plate_number, bus.Bus_Type, bus.Capacity));
+                        }
                     }
                 }
+                return travel;
             }
-            return travel;
+            else
+            {
+                return Unauthorized("Invalid JWT token");
+            }
         }
 
         [HttpPost("reservations")]
-        public List<int> getLocuriPerCursa(SeatsDto dto)
+        public ActionResult<List<int>> getLocuriPerCursa(SeatsDto dto)
         {
-            DateTime dateTime = DateTime.Parse(dto.DepartureDay);
-
-           
-            var rs = from m in _context.Reservations where m.RouteId.ToString() == dto.Id & m.DateSchedule.Day == dateTime.Day select m;
-            List<int> locuriIndisponibile=new List<int>();
-
-            foreach(var r in rs)
+            if (jwtService.VerifyToken())
             {
-                locuriIndisponibile.Add(r.SeatNumber);
-            }
-            return locuriIndisponibile;
-
-        }
-        [HttpPost("mytickets")]
-        public List<Reservation> GetReservations(TicketsDto req)
-        {
+                DateTime dateTime = DateTime.Parse(dto.DepartureDay);
 
 
-            var tickets = _context.Reservations.ToList();
-            List<Reservation> res= new();
+                var rs = from m in _context.Reservations where m.RouteId.ToString() == dto.Id & m.DateSchedule.Day == dateTime.Day select m;
+                List<int> locuriIndisponibile = new List<int>();
 
-            foreach (var c in tickets)
-            {
-                if (req.Id== c.UserId)
+                foreach (var r in rs)
                 {
-                    res.Add(c);
+                    locuriIndisponibile.Add(r.SeatNumber);
                 }
+                return locuriIndisponibile;
             }
-            return res;
+            else
+            {
+                return Unauthorized("Invalid JWT token");
+            }
+
         }
 
+        [HttpPost("mytickets")]
+        public ActionResult<List<Reservation>> GetReservations(TicketsDto req)
+        {
+            if (jwtService.VerifyToken())
+            {
+
+                var tickets = _context.Reservations.ToList();
+                List<Reservation> res = new();
+
+                foreach (var c in tickets)
+                {
+                    if (req.Id == c.UserId)
+                    {
+                        res.Add(c);
+                    }
+                }
+                return res;
+            }
+            else
+            {
+                return Unauthorized("Invalid JWT token");
+            }
+        }
 
         [HttpPost]
         public IActionResult Cautare_Curse()
@@ -123,11 +147,13 @@ namespace MultipleAuthIdentity.Controllers
             return View("Curse", travel);
             //return Redirect("Curse");
         }
+
         public IActionResult Curse()
         {
             return View();
         }
 
+        [Authorize(Roles = "USER")]
         [HttpGet]
         public IActionResult Ticket()
         {
@@ -155,7 +181,7 @@ namespace MultipleAuthIdentity.Controllers
             return View(tickets);
         }
 
-        
+        [Authorize(Roles ="USER")]
         public IActionResult Locuri(string id,string departure_day)
         {
             DateTime dateTime = DateTime.Parse(departure_day);
@@ -180,28 +206,32 @@ namespace MultipleAuthIdentity.Controllers
             return View(mymodel);
         }
 
-      
-
+        [Authorize(Roles = "USER")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmareRezervare([FromBody] ReservationModel data)
         {
             Routes route = _context.Routes.Find(data.routeId);
-            Reservation reservation=new();
+            
             DateTime scheduleDate = DateTime.Parse(data.Date);
             AppUser user= await userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-
-            reservation.BusId = route.BusId;
-            reservation.RouteId = data.routeId;
-            reservation.DateSchedule = scheduleDate;
-            reservation.UserId = user.Id;
+            
             for (var i=0;i<data.SeatsNumber.Count;i++)
             {
+                Reservation reservation = new();
+                reservation.BusId = route.BusId;
+                reservation.RouteId = data.routeId;
+                reservation.DateSchedule = scheduleDate;
+                reservation.UserId = user.Id;
+
                 reservation.SeatNumber = Int32.Parse(data.SeatsNumber[i]);
                 reservation.TicketType = data.TicketsType[i];
                 reservation.Price = (float)route.Price;
-                _context.Reservations.Add(reservation);
-                _context.SaveChanges();
+                await _context.Reservations.AddAsync(reservation);
+                
             }
+       
+            _context.SaveChanges();
             return Ok("success");
         }
 

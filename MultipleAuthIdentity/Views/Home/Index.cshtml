@@ -74,27 +74,16 @@
             cursor: pointer;
             border-radius:10px;
         }
+
+        .bus-img {
+            width:400px;
+            text-align:center;
+            margin-left:400px;
+        }
+
+
     </style>
 </head>
-  @*<section id="hero" class="d-flex align-items-center">
-
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
-          <h1>Protocoale de autentificare si autorizare la nivel de aplicatie</h1>
-          <h2>Connect with Identity Server and OAuth2</h2>
-          <div class="d-flex justify-content-center justify-content-lg-start">
-            <a href="Admin" class="btn-get-started scrollto">Get started</a>
-           
-          </div>
-        </div>
-        <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-in" data-aos-delay="200">
-          <img src="./images/hero-img.png" class="img-fluid animated" alt="">
-        </div>
-      </div>
-    </div>
-
-  </section>*@
 
     <div class="container">
         <div class="image">
@@ -102,16 +91,40 @@
         </div>
         <div class="content">
             <h1>Transport public online</h1>
+       @if(User.IsInRole("USER"))
+        {
             <h4>Puteți alege prețul avantajos pentru biletul dumneavoastră și puteți călători rapid în orice oraș</h4>
-            <div class="buttons">
+        }
+        else if (User.IsInRole("MODERATOR"))
+        {
+            <h4>Moderează cursele firmei tale într-o interfață simplă</h4>
+        }
+        else
+        {
+            <h4>Administrează aplicația și utilizatorii ei într-o interfață simplă</h4>
+        }
+
+        
+        <div class="buttons">
+        @if (User.IsInRole("MODERATOR"))
+        {
             <button class="black-button">
-                <a style="text-decoration: none;color: inherit;" asp-controller="Tickets" asp-action="Index">Cumpără bilet</a>
+                <a style="text-decoration: none;color: inherit;" asp-controller="Moderator" asp-action="Index">Gestioneaza cursele</a>
             </button>
-                @if (!User.Identity.IsAuthenticated)
-                {
-                <button class="white-button"><a style="text-decoration: none;color: inherit;" asp-area="Identity" asp-page="/Account/Login">Login</a></button>
-                }
-            </div>
+        }
+        else
+        {
+        <button class="black-button">
+            <a style="text-decoration: none;color: inherit;" asp-controller="Tickets" asp-action="Index">Cumpără bilet</a>
+        </button>    
+        }
+                
+        @if (!User.Identity.IsAuthenticated)
+        {
+        <button class="white-button"><a style="text-decoration: none;color: inherit;" asp-area="Identity" asp-page="/Account/Login">Login</a></button>
+        }
         </div>
+        </div>
+    
     </div>
     <footer></footer>
