@@ -141,7 +141,6 @@ namespace MultipleAuthIdentity.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditBus(BusModel model)
         {
             Bus? bus = await _context.Bus.FindAsync(model.Id);
@@ -159,7 +158,6 @@ namespace MultipleAuthIdentity.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteBus(int id)
         {
             Bus? bus = await _context.Bus.FindAsync(id);

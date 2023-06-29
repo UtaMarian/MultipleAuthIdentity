@@ -17,3 +17,21 @@
 2023-06-27 15:00:16.800 +03:00 [INF] jamesmarian2016@gmail.com s-a autentificat cu contul de saml2
 2023-06-27 15:01:34.550 +03:00 [INF] jamesmarian2016@gmail.com s-a autentificat cu contul de saml2
 2023-06-27 15:02:15.244 +03:00 [INF] jamesmarian2016@gmail.com s-a autentificat cu contul de saml2
+2023-06-29 08:34:39.211 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:38:11.425 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:40:44.671 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:42:16.808 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:47:05.756 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:49:13.265 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:49:53.746 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:51:31.581 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:54:05.570 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 08:55:03.159 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 09:02:15.224 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook
+2023-06-29 17:10:47.240 +03:00 [INF] Autentificare reușită pentru utilizatorul superleague200@gmail.com
+2023-06-29 17:50:56.835 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 18:51:46.750 +03:00 [ERR] Utilizatorul nu are acces in aplicatie pe baza ACL-ului=superleague200@gmail.com
+2023-06-29 18:53:44.838 +03:00 [ERR] Utilizatorul nu are acces in aplicatie pe baza ACL-ului=superleague200@gmail.com
+2023-06-29 18:56:51.421 +03:00 [ERR] Utilizatorul nu are acces in aplicatie pe baza ACL-ului=superleague200@gmail.com
+2023-06-29 18:58:36.965 +03:00 [INF] marianuta112@gmail.com s-a autentificat cu contul de Google
+2023-06-29 19:06:46.073 +03:00 [INF] marianuta11@yahoo.com s-a autentificat cu contul de Facebook

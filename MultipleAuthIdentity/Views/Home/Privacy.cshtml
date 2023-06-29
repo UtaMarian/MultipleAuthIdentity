@@ -43,20 +43,22 @@
 </style>
 <h1>@ViewData["Title"]</h1>
 
-@*@if(User.Identity.IsAuthenticated){*@
-<form method="post" action="Privacy">
-    <div class="form-group">
-        <label for="comment">Subject:</label>
-        <input type="text" name="Subject" class="form-control" rows="5" />
-    </div>
-    <div class="form-group">
-        <label for="comment">Leave a Comment:</label>
-        <textarea name="Content" class="form-control" rows="5" ></textarea>
-    </div>
+@if(User.Identity.IsAuthenticated){
+    
+    <form method="post" action="Privacy">
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label for="comment">Subject:</label>
+            <input type="text" name="Subject" class="form-control" rows="5" />
+        </div>
+        <div class="form-group">
+            <label for="comment">Leave a Comment:</label>
+            <textarea name="Content" class="form-control" rows="5" ></textarea>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Submit Comment</button>
-</form>
-@*}*@
+        <button type="submit" class="btn btn-primary">Submit Comment</button>
+    </form>
+}
 
  
 

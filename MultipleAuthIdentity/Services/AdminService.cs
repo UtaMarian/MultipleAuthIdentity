@@ -13,16 +13,12 @@ namespace MultipleAuthIdentity.Services
         private readonly IConfiguration _configuration;
         private readonly UserManager<AppUser> _userManager;
         private readonly AuthDbContext _context;
-        private readonly string usersFilename;
-        private readonly string moneyRoutesFilename;
 
         public AdminService(IConfiguration configuration, UserManager<AppUser> userManager, AuthDbContext context)
         {
             _configuration = configuration;
             _userManager = userManager;
             _context = context;
-            usersFilename = "";
-            moneyRoutesFilename = "";
         }
 
         public void changeUsersPanel(int month)
@@ -159,6 +155,7 @@ namespace MultipleAuthIdentity.Services
 
             return dailyUsers;
         }
+       
        
     }
     public class UserCountPerDay

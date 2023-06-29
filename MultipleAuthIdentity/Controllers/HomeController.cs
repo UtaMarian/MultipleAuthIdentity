@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Owin.Security.Cookies;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.Models;
+using MultipleAuthIdentity.Services;
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -38,7 +39,6 @@ namespace MultipleAuthIdentity.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult ContactPost( ContactDto dto)
         {
             Console.WriteLine(dto.Name);

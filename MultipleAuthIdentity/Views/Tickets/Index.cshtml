@@ -4,7 +4,7 @@
 
 <div>
     <form class="ticket-form" asp-controller="Tickets" asp-action="Cautare_Curse" method="post" id="form_">
-        
+        @Html.AntiForgeryToken()
         <div class="inline_div">
             <label class="in-block">Plecare din</label>
             <select class="form-select inline_element" name="departure">

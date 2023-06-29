@@ -43,6 +43,7 @@
 {
     int i = 0;
     <form>
+     @Html.AntiForgeryToken()
     <h1>Curse disponibile</h1>
     <h4>Plecare din <i>@Model[0].Departure</i></h4>
     <h4>Sosire la <i>@Model[0].Arrival</i></h4>

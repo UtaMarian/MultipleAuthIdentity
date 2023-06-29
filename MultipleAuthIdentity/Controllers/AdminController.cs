@@ -8,6 +8,7 @@ using MultipleAuthIdentity.Models;
 using MultipleAuthIdentity.Services;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using static Duende.IdentityServer.Models.IdentityResources;
 using ILogger = Serilog.ILogger;
 
 namespace MultipleAuthIdentity.Controllers
@@ -88,7 +89,7 @@ namespace MultipleAuthIdentity.Controllers
             return View("Index", users);
         }
 
-        [Authorize(Roles = "ADMIN")]
+        [Authorize(Policy ="SecondAdmin")]
         public async Task<IActionResult> SuperAdmin()
         {
             List<string> cities = new List<string>();
@@ -182,7 +183,7 @@ namespace MultipleAuthIdentity.Controllers
             model.montlyOnlineUsers = _adminService.getMonthlyUsers();
             model.soldedTickets = prices.Count();
             model.totalUsers = totalUsers.Count();
-            model.onlineUsers = onlineUsers;
+            model.onlineUsers = _userManager.Users.Where(c=>c.LastSignIn.Value.Day==DateTime.Now.Day).Count();
             model.totalMoney = prices.Sum();
             model.providers = providers;
 
@@ -191,6 +192,76 @@ namespace MultipleAuthIdentity.Controllers
             
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ACL()
+        {
+            TempData["del"] = null;
+            List<AccessListItem>list= await _context.AccessListItem.ToListAsync();
+            AccessControlList acl = new AccessControlList(list);
+
+            return View(acl);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUserACL(string Email, string Reason)
+        {
+            TempData["del"] = "Utilizatorul a fost adaugat in ACL";
+
+            AccessListItem? item = new AccessListItem();
+            item.Email = Email;
+            item.Reason = Reason;
+            item.HasAccess = false;
+            await _context.AccessListItem.AddAsync(item);
+            _context.SaveChanges();
+
+
+            List<AccessListItem> list = await _context.AccessListItem.ToListAsync();
+            AccessControlList acl = new AccessControlList(list);
+
+            return View("ACL",acl);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult>  AddUserIdACL(string id)
+        {
+            TempData["del"] = "Utilizatorul a fost adaugat in ACL";
+            AppUser? user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                AccessListItem? item = new AccessListItem();
+                item.Email = user.Email;
+                item.Reason = "A fost banat de Admin";
+                item.HasAccess = false;
+                await _context.AccessListItem.AddAsync(item);
+                _context.SaveChanges();
+            }
+            else
+            {
+                TempData["del"] = "Utilizatorul " + id + " nu exista in sistem";
+            }
+
+            List<AccessListItem> list = await _context.AccessListItem.ToListAsync();
+            AccessControlList acl = new AccessControlList(list);
+
+            return View("ACL", acl);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteACL(int id)
+        {
+            TempData["del"] = "Utilizatorul a fost sters din ACL. Acum are acces in aplicatie";
+            AccessListItem? item = _context.AccessListItem.Where(c => c.Id == id).FirstOrDefault();
+            if(item != null)
+            {
+                _context.AccessListItem.Remove(item);
+                _context.SaveChanges();
+            }
+            List<AccessListItem> list = await _context.AccessListItem.ToListAsync();
+            AccessControlList acl = new AccessControlList(list);
+
+            return View("ACL", acl);
         }
 
         public int getOnlineUsers()
@@ -205,11 +276,8 @@ namespace MultipleAuthIdentity.Controllers
         {
             onlineUsers--;
         }
-
-        
-
-
-        
+ 
     }
+
    
 }

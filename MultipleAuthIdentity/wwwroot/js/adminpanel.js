@@ -21,6 +21,7 @@ function loadMoreContent() {
 
 
 $(document).ready(function () {
+   
     fetch('/Admin/getlogs')
         .then(response => response.json())
         .then(logs => {
@@ -45,7 +46,7 @@ $(document).ready(function () {
             headerRow.appendChild(headerCell);
             thead.appendChild(headerRow);
             table.appendChild(thead);
-            
+            0
             const tbody = document.createElement('tbody');
             tbody.id = "tbody_table";
             if (logs.length == 0)
@@ -63,7 +64,7 @@ $(document).ready(function () {
 
             table.appendChild(tbody);
             table.appendChild(footer);
-
+            
         })
         .catch(error => {
             console.error('Error:', error);

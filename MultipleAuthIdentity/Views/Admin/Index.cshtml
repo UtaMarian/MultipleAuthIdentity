@@ -13,6 +13,7 @@
             <td scope="col">2FA</td>
             <td scope="col">Email confirmat</td>
             <td scope="col">Editeaza</td>
+            <td scope="col">Baneaza</td>
             <td scope="col">Sterge</td>
         </tr>
     </thead>
@@ -25,6 +26,7 @@
             <td>@(user.TwoFactorEnabled ? "Da" : "Nu")</td>
             <td>@(user.EmailConfirmed ? "Da" : "Nu")</td>
             <td><button class="btn btn-warning" type="submit" asp-action="Edit" formmethod="get" asp-controller="Admin" asp-route-id="@user.Id">Editeaza</button></td>
+             <td><button class="btn btn-dark" type="submit" asp-action="AddUserIdACL" formmethod="get" asp-controller="Admin" asp-route-id="@user.Id">Baneaza</button></td>
             <td><button class="btn btn-danger" type="submit" asp-action="Delete" formmethod="get" asp-controller="Admin" asp-route-id="@user.Id" onclick="return confirm('Ești sigur că dorești să ștergi utilizatorul acesta?');">Sterge</button></td>
         </tr>
         }

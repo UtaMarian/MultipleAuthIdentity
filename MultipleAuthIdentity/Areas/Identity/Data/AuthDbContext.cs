@@ -14,6 +14,7 @@ public class AuthDbContext : IdentityDbContext<AppUser>
     public DbSet<Bus> Bus { get; set; }
     public DbSet<Routes> Routes { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
+    public DbSet<AccessListItem> AccessListItem { get; set; }
 
     public AuthDbContext(DbContextOptions<AuthDbContext> options)
         : base(options)
@@ -31,7 +32,7 @@ public class AuthDbContext : IdentityDbContext<AppUser>
             entity.Property(e => e.Content).HasMaxLength(2048);
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.Subject).HasMaxLength(100);
-            
+
 
         });
         builder.Entity<Bus>(entity =>
@@ -39,14 +40,14 @@ public class AuthDbContext : IdentityDbContext<AppUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).IsRequired();
             entity.Property(e => e.Bus_Plate_number).HasMaxLength(50);
-            
+
 
         });
         builder.Entity<Routes>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).IsRequired();
-            
+
 
         });
         builder.Entity<Reservation>(entity =>
@@ -54,6 +55,11 @@ public class AuthDbContext : IdentityDbContext<AppUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).IsRequired();
 
+        });
+        builder.Entity<AccessListItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).IsRequired();
         });
     }
 

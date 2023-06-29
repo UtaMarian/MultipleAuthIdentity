@@ -24,6 +24,8 @@ using MultipleAuthIdentity.Controllers;
 using MultipleAuthIdentity.Models;
 using System.Linq;
 using Serilog;
+using static Duende.IdentityServer.Models.IdentityResources;
+using static Rsk.Saml.SamlConstants;
 
 namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 {
@@ -100,171 +102,246 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
 
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
-            // Request a redirect to the external login provider.
-            var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            return new ChallengeResult(provider, properties);
+            try
+            {
+                // Request a redirect to the external login provider.
+                var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
+                var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+                return new ChallengeResult(provider, properties);
+            }
+            catch (Exception ex)
+            {
+                MyError error = new MyError();
+                error.Message = "Internal server error";
+                error.Code = 500;
+                error.Description = ex.Message;
+
+                return RedirectToAction("ErrorPage", "Home", error);
+            }
         }
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-            Log.Logger = new LoggerConfiguration()
-                        .MinimumLevel.Debug()
-                        .WriteTo.Console()
-                        .WriteTo.File("log.txt")
-                        .CreateLogger();
+            MyError error = new MyError();
+            try
+            {
+                Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Debug()
+                            .WriteTo.Console()
+                            .WriteTo.File("log.txt")
+                            .CreateLogger();
 
-            returnUrl = returnUrl ?? Url.Content("~/");
-            if (remoteError != null)
-            {
-                Log.Error("Eroare de la provideul de identitate " + remoteError);
-                Log.CloseAndFlush();
-                ErrorMessage = $"Error from external provider: {remoteError}";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
-            }
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
-            {
-                Log.Error("Eroare incarcare informatii de login" );
-                Log.CloseAndFlush();
-                ErrorMessage = "Error loading external login information.";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
-            }
-
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-            if (result.Succeeded)
-            {
-                var email = "";
-                if (info.LoginProvider.Equals("saml2"))
+               
+                returnUrl = returnUrl ?? Url.Content("~/");
+                if (remoteError != null)
                 {
-                    email = info.Principal.Claims.FirstOrDefault().Value;
+                    Log.Error("Eroare de la provideul de identitate " + remoteError);
+                    Log.CloseAndFlush();
+                    ErrorMessage = $"Error from external provider: {remoteError}";
+                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                }
+                var info = await _signInManager.GetExternalLoginInfoAsync();
+                if (info == null)
+                {
+                    Log.Error("Eroare incarcare informatii de login");
+                    Log.CloseAndFlush();
+                    ErrorMessage = "Error loading external login information.";
+                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                }
+
+                var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+               
+                if (result.Succeeded)
+                {
+                    var email = "";
+                    if (info.LoginProvider.Equals("saml2"))
+                    {
+                        email = info.Principal.Claims.FirstOrDefault().Value;
+                    }
+                    else
+                    {
+                        email = info.Principal.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault().Value;
+                    }
+
+                   
+                    Log.Information(email + " s-a autentificat cu contul de " + info.LoginProvider);
+                    _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+
+                    AppUser user = await _userManager.FindByEmailAsync(email);
+                    if (user != null)
+                    {
+                        if (!HasAccess(email))
+                        {
+                            Log.Error("Utilizatorul nu are acces in aplicatie pe baza ACL-ului=" + Input.Email);
+
+                            error.Message = "Neautorizat";
+                            error.Code = 403;
+                            error.Description = "Se pare ca nu aveti acces la aplicatie sau un admin v-a banat";
+                            return RedirectToAction("ErrorPage", "Home", error);
+                        }
+                        var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+                        user.IpAddress = ip;
+                        user.LastSignIn = DateTime.Now;
+                        _authDbContext.Users.Update(user);
+                        _authDbContext.SaveChanges();
+                    }
+
+                    AdminController.growupOnlineUsers();
+                    Log.CloseAndFlush();
+                    if (!Url.IsLocalUrl(returnUrl) && (returnUrl != null))
+                    {
+                        Log.Error("Redirect URL invalid. User Email=" + email);
+                       
+                        error.Message = "Eroare de redirectare";
+                        error.Code = 400;
+                        error.Description = "Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului";
+
+                        Log.Warning("Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului - User: " + email);
+                        Log.CloseAndFlush();
+                        return RedirectToAction("ErrorPage", "Home", error);
+                    }
+                    return LocalRedirect(returnUrl);
+                }
+                if (result.IsLockedOut)
+                {
+                    Log.CloseAndFlush();
+                    return RedirectToPage("./Lockout");
                 }
                 else
                 {
-                    email =  info.Principal.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault().Value;
-                }
-
-                Log.Information(email + " s-a autentificat cu contul de "+ info.LoginProvider);
-                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
-
-                AppUser user = await _userManager.FindByEmailAsync(email);
-                if (user != null)
-                {
-                    var ip = HttpContext.Connection.RemoteIpAddress.ToString();
-                    user.IpAddress = ip;
-                    user.LastSignIn = DateTime.Now;
-                    _authDbContext.Users.Update(user);
-                    _authDbContext.SaveChanges();
-                }
-
-                AdminController.growupOnlineUsers();
-                Log.CloseAndFlush();
-                return LocalRedirect(returnUrl);
-            }
-            if (result.IsLockedOut)
-            {
-                Log.CloseAndFlush();
-                return RedirectToPage("./Lockout");
-            }
-            else
-            {
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                {
-                    Input = new InputModel
+                  
+                    ReturnUrl = returnUrl;
+                    ProviderDisplayName = info.ProviderDisplayName;
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                     {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
+                        Input = new InputModel
+                        {
+                            Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                        };
+                    }
+                    Log.CloseAndFlush();
+                   
+                    return await OnPostConfirmationAsync(returnUrl);
                 }
-                Log.CloseAndFlush();
-                return await OnPostConfirmationAsync(returnUrl);
+            }
+            catch (Exception ex)
+            {
+      
+                error.Message = "Internal server error";
+                error.Code = 500;
+                error.Description = ex.Message;
+
+                return RedirectToAction("ErrorPage", "Home", error);
             }
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
-            Log.Logger = new LoggerConfiguration()
-                        .MinimumLevel.Debug()
-                        .WriteTo.Console()
-                        .WriteTo.File("log.txt")
-                        .CreateLogger();
-
-            returnUrl = returnUrl ?? Url.Content("~/");
-
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
+            try
             {
-                Log.Error("Eroare incarcare informatii de la providerul: "+info.LoginProvider);
-                Log.CloseAndFlush();
-                ErrorMessage = "Error loading external login information during confirmation.";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
-            }
+                Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Debug()
+                            .WriteTo.Console()
+                            .WriteTo.File("log.txt")
+                            .CreateLogger();
 
-            if (ModelState.IsValid)
-            {
-                var user = CreateUser();
-                var email = "";
-                if (info.LoginProvider.Equals("saml2"))
-                {
-                    email=info.Principal.Claims.FirstOrDefault().Value;
-                }
-                else
-                {
-                    email = Input.Email;
-                }
-                await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
-                user.EmailConfirmed = true;
-                user.LastSignIn = DateTime.Now;
-                var ip = HttpContext.Connection.RemoteIpAddress.ToString();
-                user.IpAddress = ip;
+                returnUrl = returnUrl ?? Url.Content("~/");
 
-                var result = await _userManager.CreateAsync(user);
-                if (result.Succeeded)
+                var info = await _signInManager.GetExternalLoginInfoAsync();
+                if (info == null)
                 {
-                    await _userManager.AddToRoleAsync(user, "USER");
-                    result = await _userManager.AddLoginAsync(user, info);
+                    Log.Error("Eroare incarcare informatii de la providerul: " + info.LoginProvider);
+                    Log.CloseAndFlush();
+                    ErrorMessage = "Error loading external login information during confirmation.";
+                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                }
+
+                if (ModelState.IsValid)
+                {
+                    var user = CreateUser();
+                    var email = "";
+                    if (info.LoginProvider.Equals("saml2"))
+                    {
+                        email = info.Principal.Claims.FirstOrDefault().Value;
+                    }
+                    else
+                    {
+                        email = Input.Email;
+                    }
+                    await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+                    await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+                    user.EmailConfirmed = true;
+                    user.LastSignIn = DateTime.Now;
+                    var ip = HttpContext.Connection.RemoteIpAddress.ToString();
+                    user.IpAddress = ip;
+
+                    var result = await _userManager.CreateAsync(user);
                     if (result.Succeeded)
                     {
-                        _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
-                        Log.Information("Utilizatorul "+ info.Principal.Identity.Name+" a creat un cont cu contul de "+ info.LoginProvider);
+                        await _userManager.AddToRoleAsync(user, "USER");
+                        result = await _userManager.AddLoginAsync(user, info);
+                        if (result.Succeeded)
+                        {
+                            _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+                            Log.Information("Utilizatorul " + info.Principal.Identity.Name + " a creat un cont cu contul de " + info.LoginProvider);
 
-                        var userId = await _userManager.GetUserIdAsync(user);
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        Console.WriteLine(code);
-                        Console.WriteLine(userId);
-                        Console.WriteLine(Request.Scheme);
+                            var userId = await _userManager.GetUserIdAsync(user);
+                            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                            Console.WriteLine(code);
+                            Console.WriteLine(userId);
+                            Console.WriteLine(Request.Scheme);
 
-                        var callbackUrl = Url.Page(
-                            "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId = userId, code = code },
-                            protocol: Request.Scheme);
+                            var callbackUrl = Url.Page(
+                                "/Account/ConfirmEmail",
+                                pageHandler: null,
+                                values: new { area = "Identity", userId = userId, code = code },
+                                protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(email, "Confirmati emailul",
-                            $"Confirmati contul aici: {HtmlEncoder.Default.Encode(callbackUrl)}");
+                            await _emailSender.SendEmailAsync(email, "Confirmati emailul",
+                                $"Confirmati contul aici: {HtmlEncoder.Default.Encode(callbackUrl)}");
 
-                        user.EmailConfirmed = true;
+                            user.EmailConfirmed = true;
 
 
-                        await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
-                        Log.CloseAndFlush();
-                        return LocalRedirect(returnUrl);
-                        
+                            await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                            Log.CloseAndFlush();
+                            if (!Url.IsLocalUrl(returnUrl) && (returnUrl!=null))
+                            {
+                                Log.Error("Redirect URL invalid. User Email=" + Input.Email);
+                                MyError error = new MyError();
+                                error.Message = "Eroare de redirectare";
+                                error.Code = 400;
+                                error.Description = "Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului";
+
+                                Log.Warning("Se pare ca url-ul este unul malițios deoarece încearcă sa vă redirecteze in afara domeniului - User: " + Input.Email);
+                                Log.CloseAndFlush();
+                                return RedirectToAction("ErrorPage", "Home", error);
+                            }
+                            return LocalRedirect(returnUrl);
+
+                        }
+                    }
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
                     }
                 }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
 
-            ProviderDisplayName = info.ProviderDisplayName;
-            ReturnUrl = returnUrl;
-            Log.CloseAndFlush();
-            return Page();
+                ProviderDisplayName = info.ProviderDisplayName;
+                ReturnUrl = returnUrl;
+                Log.CloseAndFlush();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                MyError error = new MyError();
+                error.Message = "Internal server error";
+                error.Code = 500;
+                error.Description = ex.Message;
+
+                return RedirectToAction("ErrorPage", "Home", error);
+            }
         }
 
         private AppUser CreateUser()
@@ -288,6 +365,20 @@ namespace MultipleAuthIdentity.Areas.Identity.Pages.Account
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
             return (IUserEmailStore<AppUser>)_userStore;
+        }
+
+        public bool HasAccess(string email)
+        {
+            List<AccessListItem> acl = _authDbContext.AccessListItem.ToList();
+            if (acl.Count > 0)
+            {
+                foreach (var a in acl)
+                {
+                    if (a.Email.Contains(email))
+                        return false;
+                }
+            }
+            return true;
         }
     }
 }

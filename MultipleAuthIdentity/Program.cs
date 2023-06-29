@@ -1,31 +1,17 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using MultipleAuthIdentity.Areas.Identity.Data;
 using MultipleAuthIdentity.Data;
 using MultipleAuthIdentity.Models;
 using MultipleAuthIdentity.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Google.Apis.Auth.AspNetCore3;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Authentication;
 using Rsk.AspNetCore.Authentication.Saml2p;
-using Serilog;
-using Microsoft.AspNetCore.Http;
+using MultipleAuthIdentity.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("AuthDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AuthDbContextConnection' not found.");
-//Add Email Configs
-//var emailConfig = builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
-//builder.Services.AddSingleton(emailConfig);
 
-//builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
 
@@ -51,10 +37,10 @@ builder.Services.AddAuthentication()
     {
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/login";
-        options.ExpireTimeSpan = TimeSpan.FromHours(1);
-        options.Cookie.HttpOnly = true;  // to prevent cookies from being accessed by client-side scripts
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //to prevent cookies from being sent over unsecured connections
-        options.Cookie.SameSite = SameSiteMode.Strict; // flag to prevent cross-site request forgery (CSRF) attacks
+        options.ExpireTimeSpan = TimeSpan.FromHours(1); //timpul de viata al cookie-ului
+        options.Cookie.HttpOnly = true;  // pentru a preveni accesarea cookie-urilor din scripturi
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //pentru a preveni trimiterea cookie-urilor pe o retea nesecurizata
+        options.Cookie.SameSite = SameSiteMode.Strict; // previne atacurile de tip CSRF
     })
     .AddGoogle("Google", options =>
     {
@@ -71,9 +57,6 @@ builder.Services.AddAuthentication()
         {
             Console.WriteLine(context.AccessToken);
             Console.WriteLine(context.User);
-            Console.WriteLine(context.Request.Body);
-            Console.WriteLine(context.TokenResponse.RefreshToken);
-            Console.WriteLine(context.TokenResponse.TokenType);
             return Task.CompletedTask;
         };
 
@@ -103,15 +86,20 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("SuperAdmin",policy =>
+    options.AddPolicy("MainAdmin", policy =>
     {
-        policy.RequireUserName("marianuta112@gmail.com");
+        policy.RequireUserName("marianuta11@yahoo.com") ;
+    });
+    options.AddPolicy("SecondAdmin", policy =>
+    {
+        policy.RequireUserName("danstefan1918@gmail.com");
     });
     options.AddPolicy("Authenticated", policy =>
     {
         policy.AuthenticationSchemes.Add(CookieAuthenticationDefaults.AuthenticationScheme);
         policy.RequireAuthenticatedUser();
     });
+   
 });
 
 var app = builder.Build();

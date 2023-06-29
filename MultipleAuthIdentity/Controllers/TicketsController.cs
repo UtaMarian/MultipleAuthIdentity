@@ -182,6 +182,7 @@ namespace MultipleAuthIdentity.Controllers
         }
 
         [Authorize(Roles ="USER")]
+        [HttpGet]
         public IActionResult Locuri(string id,string departure_day)
         {
             DateTime dateTime = DateTime.Parse(departure_day);
@@ -203,12 +204,11 @@ namespace MultipleAuthIdentity.Controllers
 
             var rs = from m in _context.Reservations where m.RouteId.ToString()==id & m.DateSchedule.Day == dateTime.Day select m;
             mymodel.Reservations = rs;
-            return View(mymodel);
+            return View("Locuri",mymodel);
         }
 
         [Authorize(Roles = "USER")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmareRezervare([FromBody] ReservationModel data)
         {
             Routes route = _context.Routes.Find(data.routeId);
